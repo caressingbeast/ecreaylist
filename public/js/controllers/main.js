@@ -25,6 +25,7 @@
     c.toggleQueue = true;
     c.username = '';
     c.users = [];
+    c.videoPaused = false;
 
     // private methods
     function getUserIndex (user) {
@@ -104,6 +105,13 @@
 
     // video added to queue
     c.add = function (index, video) {
+      var added = getVideoIndex(video);
+
+      if (added > -1) {
+        alert('The selected video is already in the queue.');
+        return;
+      }
+
       c.results.splice(index, 1);
 
       socket.emit('videoAddedToQueue', video);

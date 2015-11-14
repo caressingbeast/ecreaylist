@@ -1,4 +1,4 @@
-@import url(https://fonts.googleapis.com/css?family=Roboto:400,300,700);
+@import url(https://fonts.googleapis.com/css?family=Montserrat:400,700);
 
 *, *:after, *:before {
   box-sizing: border-box;
@@ -12,7 +12,7 @@ body {
   margin: 0;
   min-height: 100%;
   color: #4d5659;
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 16px;
   line-height: 1.5;
 }
@@ -22,8 +22,9 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  margin: 0;
-  padding: 0;
+  margin: 0 0 30px 0;
+  color: #000;
+  font-weight: 800;
   line-height: 1.25;
 }
 
@@ -72,8 +73,12 @@ label {
   border-radius: 3px;
   cursor: pointer;
   display: inline-block;
-  padding: 10px 15px;
+  padding: 11px 15px;
   text-align: center;
+}
+
+.btn-approval {
+  background: #43bb6e;
 }
 
 .container {
@@ -110,186 +115,249 @@ label {
   vertical-align: top;
 }
 
-.inner {
-  overflow: hidden;
-  padding: 15px;
+.overlay {
+  background: #df1f1f;
+  position: fixed; top: 0; bottom: 0; left: 0; right: 0;
+  z-index: 100;
 }
 
-h1 {
+.overlay-inner {
+  margin: 0 auto;
+  height: 100%;
+  text-align: center;
+}
+
+.overlay h1,
+.overlay p {
   color: #fff;
-  font-size: 40px;
-  line-height: 1;
+}
+
+.overlay h1 {
+  margin: 0 0 20px 0;
+  font-size: 61px;
+}
+
+.overlay input {
+  border: none;
+  width: 300px;
+}
+
+.btn-enter {
+  background: none;
+  border: 3px solid #fff;
+  padding: 7px 15px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
 .header {
-  background: #e80044;
+  background: #df1f1f;
   overflow: hidden;
+}
+
+.header h1 {
+  margin: 17px;
+  color: #fff;
 }
 
 .header form {
   background: #fff;
   border-radius: 3px;
   float: right;
+  margin: 15px;
   overflow: hidden;
   width: 70%;
 }
 
-.header input {
+.header input,
+.header button {
   background: none;
   border: none;
-  float: left;
   padding: 10px;
 }
 
 .header button {
-  background: none;
-  border: none;
-  float: right;
-  padding: 10px;
   color: #ccc;
 }
 
-.user-overlay {
-  background: rgba(0, 0, 0, 0.6);
-  position: fixed; top: 0; bottom: 0; left: 0; right: 0;
-  z-index: 100;
+.search-actions {
+  background: #f5f5f5;
 }
 
-.user-box {
-  background: #fff;
-  border: 3px solid #555;
-  margin: -65px 0 0 -200px;
-  position: fixed; top: 50%; left: 50%;
-  width: 400px; height: 130px;
-  text-align: center;
-}
-
-.search-results .result {
-  border-bottom: 1px solid #ccc;
-  cursor: pointer;
-  padding: 5px;
-}
-
-.results-meta {
-  border-bottom: 1px solid #ccc;
-  padding: 15px;
-  text-align: center;
-}
-
-.search-results .result:hover {
-  background: #eee;
-}
-
-.result div {
-  padding: 10px;
-}
-
-.result p {
-  margin: 5px 0 0 0;
+.search-actions div {
+  padding: 10px 20px;
   color: #999;
-  font-size: 14px;
+  font-size: 18px;
 }
 
-.result .thumbnail {
-  line-height: 1;
+.search-actions a {
+  color: #e80044;
 }
 
-.result .thumbnail img {
+.search-results-inner {
+  max-height: 714px;
+  overflow: auto;
+}
+
+.search-result {
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+.search-result:nth-child(2n-1) {
+  background: #f5f5f5;
+}
+
+.search-result:hover {
+  background: #22242a;
+  color: #727785;
+}
+
+.search-result div {
+  padding: 15px 10px;
+}
+
+.search-result .thumbnail,
+.search-result img {
   margin: 0;
   line-height: 1;
 }
 
+.search-result h2 {
+  margin: 0 0 5px 0;
+  font-size: 20px;
+}
+
+.search-result:hover h2 {
+  color: #fff;
+}
+
+.search-result p {
+  margin: 0;
+  color: #727785;
+  font-size: 12px;
+}
+
 .user-list {
-  width: 150px;
+  margin: 0 -5px -5px 0;
+  overflow: hidden;
+  padding: 15px;
 }
 
-.messages-outer {
-  border-bottom: 1px solid #ccc;
-  font-size: 14px;
-}
-
-.messages-inner {
-  border-right: 1px solid #ccc;
-  overflow: auto;
-  height: 200px; max-height: 200px;
-}
-
-.messages-inner form {
-  padding: 10px;
-}
-
-.messages-inner form textarea {
-  margin: 0 0 10px 0;
-  width: 100%; height: 100px;
-}
-
-.message-list {
-  overflow: auto;
-  height: 400px; max-height: 400px;
+.user-list span {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  display: block;
+  float: left;
+  margin: 0 5px 5px 0;
+  max-width: 150px;
+  overflow: hidden;
+  padding: 5px 10px;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .message {
-  border-bottom: 1px solid #ccc;
+  border-top: 1px solid #f5f5f5;
   overflow: hidden;
-  padding: 6px;
+  font-size: 14px;
 }
 
-.message.userMessage {
-  background: #eee;
+.message div {
+  padding: 6px;
 }
 
 .message .username {
   overflow: hidden;
-  width: 20%;
+  width: 21%;
   font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .message .content {
-  width: 76%;
+  width: 78%;
 }
 
-.user-list span {
-  border-bottom: 1px solid #ccc;
-  display: block;
-  padding: 6px;
+.messages-outer form {
+  background: #f5f5f5;
+  padding: 15px;
 }
 
-.playlist-buttons {
-  background: #444;
+.messages-outer textarea {
+  width: 100%;
 }
 
-.playlist-buttons div {
+.messages-outer .button {
+  margin: 0;
+}
+
+#player {
+  position: absolute; top: 360; right: 0;
+  width: 50%; height: 360px;
+}
+
+.playlist-outer {
+  background: #22242a;
+  padding: 360px 0 0 0;
+  color: #727785;
+  font-weight: 800;
+}
+
+.playlist-current {
+  padding: 20px;
+  color: #fff;
+  font-size: 20px;
+}
+
+.playlist-inner {
+  height: 270px; max-height: 270px;
+  overflow: auto;
+}
+
+.playlist-video {
+  border-top: 1px solid #333613;
+}
+
+.playlist-video div {
   padding: 10px;
-  width: 50%;
-  color: #666;
+}
+
+.playlist-video .delete {
+  cursor: pointer;
+  width: 80px;
+  color: #e80044;
   text-align: center;
 }
 
-.playlist-buttons div:first-child {
-  border-right: 1px solid #333;
-}
-
-.playlist-buttons .active {
-  background: #666;
+.playlist-video .delete:hover {
+  background: #e80044;
   color: #fff;
 }
 
-.playlist-inner .video {
-  background: #444;
-  border-top: 1px solid #333;
-  padding: 15px;
-  color: #fff;
+.playlist-actions {
+  border-top: 1px solid #333613;
 }
 
-.video .text-right a {
-  color: red;
+.playlist-actions div {
+  background: #333;
+  color: #666;
+  line-height: 60px;
+  text-align: center;
+}
+
+.playlist-actions .active {
+  background: #22242a;
+  color: #fff;
 }
 
 .footer {
+  background: #f5f5f5;
   clear: both;
-  padding: 30px 0;
+  padding: 30px;
   color: #ccc;
   text-align: center;
 }

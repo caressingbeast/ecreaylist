@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>eCreaylist</title>
+    <title>something.fm</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="css/style.css">
@@ -16,99 +16,92 @@
     <script src="js/services/youtube.js"></script> <!-- load youtube directive -->
   </head>
   <body ng-app="ecreaylist" ng-controller="MainCtrl as main">
-    <div class="user-overlay" ng-if="main.showUserOverlay">
-      <div class="user-box table">
+    <div class="overlay" ng-if="main.showUserOverlay">
+      <div class="overlay-inner table">
         <form class="table-cell" ng-submit="main.saveUser()">
-          <input class="form-input" type="text" placeholder="Enter username" ng-model="main.username" />
-          <button class="button" type="submit">Let's do this!</button>
+          <h1>something.fm</h1>
+          <input class="form-input" type="text" maxlength="30" placeholder="Enter username" ng-model="main.username" />
+          <button class="button btn-enter" type="submit">Click me!</button>
         </form>
       </div>
     </div>
     <div class="container">
       <div class="header">
         <div class="column float-left">
-          <div class="inner">
-            <h1>ecreaylist</h1>
-          </div>
+          <h1>something.fm</h1>
         </div>
         <div class="column float-right">
-          <div class="inner">
-            <form ng-submit="main.search()">
-              <input type="text" placeholder="Search YouTube" ng-model="main.query" />
-              <button type="submit"><i class="fa fa-search"></i></button>
-            </form>
-          </div>
+          <form ng-submit="main.search()">
+            <input class="float-left" type="text" placeholder="Search YouTube" ng-model="main.query" />
+            <button class="float-right" type="submit"><i class="fa fa-search"></i></button>
+          </form>
         </div>
       </div>
       <div class="column float-left">
         <div class="search-results" ng-if="main.showSearchResults">
-          <div class="results-meta">
-            Your search returned {{ main.results.length }} results. <a ng-click="main.clearSearch()">(close)</a>
+          <div class="search-actions table">
+            <div class="table-cell">{{ main.results.length }} results for "{{ main.query }}"</div>
+            <div class="table-cell text-right"><a ng-click="main.clearSearch()"><i class="fa fa-close"></i></a></div>
           </div>
-          <div class="result table" ng-repeat="result in main.results" ng-click="main.add($index, result)">
-            <div class="thumbnail table-cell cell-top">
-              <img src="{{ result.snippet.thumbnails.default.url }}" alt="{{ result.snippet.title }}" />
-            </div>
-            <div class="details table-cell cell-top">
-              <h3>{{ result.snippet.title }}</h3>
-              <p>{{ result.snippet.description }}</p>
+          <div class="search-results-inner">
+            <div class="search-result table" ng-click="main.add($index, video)" ng-repeat="video in main.results">
+              <div class="thumbnail table-cell cell-top"><img src="{{ video.snippet.thumbnails.default.url }}" alt="{{ video.snippet.title }}" /></div>
+              <div class="details table-cell cell-top">
+                <h2>{{ video.snippet.title }}</h2>
+                <p>{{ video.snippet.description }}</p>
+              </div>
             </div>
           </div>
         </div>
-        <div class="messages-outer table" ng-if="!main.showSearchResults">
-          <div class="messages-inner table-cell cell-top">
-            <div class="message-list">
-              <div class="message" ng-repeat="message in main.messages" ng-class="{ 'userMessage': main.username === message.username }">
-                <div class="username float-left text-right truncate">{{ message.username }}</div>
-                <div class="content float-right">{{ message.message }}</div>
-              </div>
+        <div class="messages-outer" ng-if="!main.showSearchResults">
+          <div class="user-list">
+            <span ng-repeat="user in main.users" ng-class="{ 'active': main.username === user }">{{ user }}</span>
+          </div>
+          <div class="message-list">
+            <div class="message" ng-repeat="message in main.messages">
+              <div class="username float-left text-right">{{ message.username }}</div>
+              <div class="content float-right">{{ message.message }}</div>
             </div>
-            <form ng-submit="main.send()">
-              <textarea class="form-input" placeholder="Enter message" ng-model="main.message"></textarea>
-              <button class="button">Send</button>
-            </form>
           </div>
-          <div class="user-list table-cell cell-top">
-            <span ng-repeat="user in main.users">
-              {{ user }}
-            </span>
-          </div>
+          <form ng-submit="main.send()">
+            <textarea class="form-input" placeholder="Enter message" ng-model="main.message"></textarea>
+            <button class="button" type="submit">Send</button>
+          </form>
         </div>
       </div>
       <div class="column float-right">
         <div id="player"></div>
         <div class="playlist-outer">
-          <div class="playlist-buttons table">
-            <div class="table-cell" ng-class="{ 'active': main.toggleQueue }" ng-click="main.showQueue()">
-              Queue
-            </div>
-            <div class="table-cell" ng-class="{ 'active': !main.toggleQueue }" ng-click="main.showHistory()">
-              Played Videos
-            </div>
+          <div class="playlist-current" ng-if="main.current.video">
+            {{ main.current.video.snippet.title }}
           </div>
           <div class="playlist-inner">
-            <div class="queue" ng-if="main.toggleQueue">
-              <div class="video table" ng-repeat="video in main.playlist">
-                <div class="table-cell">
-                  {{ video.snippet.title }}
-                </div>
-                <div class="table-cell text-right">
-                  <a ng-click="main.delete(video)">delete</a>
-                </div>
+            <div class="playlist-queue" ng-if="main.toggleQueue">
+              <div class="playlist-video" ng-if="main.playlist.length < 2">
+                <div class="table-cell">No videos in queue.</div>
+              </div>
+              <div class="playlist-video table" ng-repeat="video in main.playlist" ng-if="main.current.video.id.videoId !== video.id.videoId">
+                <div class="table-cell">{{ video.snippet.title }}</div>
+                <div class="table-cell delete" ng-click="main.delete(video)">delete</div>
               </div>
             </div>
-            <div class="history" ng-if="!main.toggleQueue">
-              <div class="video table" ng-repeat="video in main.playedVideos">
-                <div class="table-cell">
-                  {{ video.snippet.title }}
-                </div>
+            <div class="playlist-history" ng-if="!main.toggleQueue">
+              <div class="playlist-video" ng-if="main.playedVideos.length < 1">
+                <div class="table-cell">No videos in history.</div>
+              </div>
+              <div class="playlist-video table" ng-repeat="video in main.playedVideos">
+                <div class="table-cell">{{ video.snippet.title }}</div>
               </div>
             </div>
+          </div>
+          <div class="playlist-actions table">
+            <div class="table-cell" ng-click="main.showQueue()" ng-class="{ 'active': main.toggleQueue }">Queue</div>
+            <div class="table-cell" ng-click="main.showHistory()" ng-class="{ 'active': !main.toggleQueue }">History</div>
           </div>
         </div>
       </div>
       <div class="footer">
-        <small>made with &hearts; (and angular + node + socket.io) by <a href="https://github.com/caressingbeast/ecreaylist">caressingbeast</a></small>
+        <small>made by <a href="https://github.com/caressingbeast/ecreaylist">caressingbeast</a></small>
       </div>
     </div>
   </body>
