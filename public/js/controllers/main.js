@@ -26,9 +26,6 @@
     c.username = '';
     c.users = [];
 
-    // private variables
-    var videoTimer;
-
     // private methods
     function getUserIndex (user) {
       return c.users.indexOf(user);
