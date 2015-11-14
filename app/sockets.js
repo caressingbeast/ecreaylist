@@ -1,6 +1,6 @@
 // app/sockets.js
 
-module.exports = function (app, io) {
+module.exports = function (io) {
   var currentVideo = { video: null, startSeconds: 0 }; // keeps track of currently playing video
   var messages = []; // keeps track of chat messages
   var playedVideos = []; // keeps track of video history
