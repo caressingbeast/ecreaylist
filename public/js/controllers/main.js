@@ -113,7 +113,6 @@
     };
 
     socket.on('addVideoToQueue', function (video) {
-      console.log(video);
       c.playlist.push(video);
 
       // if it's the first video, play!
@@ -147,10 +146,6 @@
     });
 
     // video ended
-    socket.on('playNextVideo', function () {
-      c.playNextVideo();
-    });
-
     c.playNextVideo = function () {
       if (!c.current.video) {
         return;
@@ -172,6 +167,10 @@
 
       c.load();
     };
+
+    socket.on('playNextVideo', function () {
+      c.playNextVideo();
+    });
 
     c.search = function () {
       VideoService.search(c.query)
