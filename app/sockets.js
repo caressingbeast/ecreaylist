@@ -68,6 +68,12 @@ module.exports = function (app, io) {
 
     // someone added a video to the queue
     socket.on('videoAddedToQueue', function (video) {
+      var index = getVideoIndex(video);
+
+      if (index > -1) {
+        return;
+      }
+
       playlist.push(video);
       io.sockets.emit('addVideoToQueue', video);
     });
