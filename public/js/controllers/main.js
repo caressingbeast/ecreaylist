@@ -146,21 +146,17 @@
     });
 
     // video ended
-    c.playNextVideo = function () {
-      if (!c.current.video) {
-        return;
-      }
-
-      var index = getVideoIndex(c.current.video);
+    c.playNextVideo = function (video) {
+      var index = getVideoIndex(video);
       var nextVideo = c.playlist[index + 1];
-
-      if (!nextVideo) {
-        return;
-      }
 
       // update playlists
       c.playedVideos.push(c.playlist[index]);
       c.playlist.splice(index, 1);
+
+      if (!nextVideo) {
+        return;
+      }
 
       c.current.video = nextVideo;
       c.current.startSeconds = 0;
@@ -168,8 +164,8 @@
       c.load();
     };
 
-    socket.on('playNextVideo', function () {
-      c.playNextVideo();
+    socket.on('playNextVideo', function (video) {
+      c.playNextVideo(video);
     });
 
     c.search = function () {

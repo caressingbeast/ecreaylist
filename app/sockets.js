@@ -104,7 +104,7 @@ module.exports = function (app, io) {
         playedVideos.push(video);
       }
 
-      socket.emit('playNextVideo');
+      socket.emit('playNextVideo', video);
     });
 
     socket.on('disconnect', function () {
