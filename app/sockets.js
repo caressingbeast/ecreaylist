@@ -14,10 +14,6 @@ module.exports = function (app, io) {
   * @param toggle Boolean indicates which array to search in
   */
   function getUsernameIndex (name, toggle) {
-    if (!name) {
-      return false;
-    }
-
     if (toggle) {
       return userList.indexOf(name);
     }
@@ -27,7 +23,7 @@ module.exports = function (app, io) {
 
   /**
   * Returns the array index of a submitted video in playlist
-  * @param video Object video object to check for
+  * @param video Object video to check for
   */
   function getVideoIndex (video) {
     return playlist.map(function (e) { return e.id.videoId; }).indexOf(video.id.videoId);
