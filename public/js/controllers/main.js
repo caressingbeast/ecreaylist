@@ -28,13 +28,34 @@
 
     var videoTimer;
 
-    // socket events
+    function getUserIndex (user) {
+      return c.users.indexOf(user);
+    }
+
+    function getVideoIndex (video) {
+      return c.playlist.map(function (e) { return e.id.videoId; }).indexOf(video.id.videoId);
+    }
+
+    /**
+    * SOCKET EVENTS
+    */
+
+    // room is full
     socket.on('roomFull', function () {
       alert('Sorry, but the room is full. Please try again later.');
     });
 
-    socket.on('refreshMessages', function (messages) {
-      c.messages = messages;
+    // populate initial data when first connecting
+    socket.on('populateInitialData', function (data) {
+      c.messages = data.messages;
+      c.playedVideos = data.playedVideos;
+      c.playlist = data.playlist;
+      c.users = data.users;
+    });
+
+    // new chat message
+    socket.on('messageAdded', function (message) {
+      c.messages.push(message);
 
       $timeout(function () {
         var $list = $('.message-list');
@@ -42,18 +63,38 @@
       }, 0, false);
     });
 
-    socket.on('refreshPlaylists', function (data) {
-      c.playedVideos = data.playedVideos;
-      c.playlist = data.playlist;
+    // new/deleted video
+    socket.on('refreshQueue', function (video) {
+      var index = getVideoIndex(video);
 
+      // if video exists, delete
+      if (index > -1) {
+        c.playlist.splice(index, 1);
+        return;
+      }
+
+      // add new video
+      c.playlist.push(video);
+
+      // if it's the first video, play!
       if (c.playlist.length === 1) {
         c.current.video = c.playlist[0];
         c.load();
       }
     });
 
-    socket.on('refreshUsers', function (users) {
-      c.users = users;
+    // new/deleted user
+    socket.on('refreshUsers', function (user) {
+      var index = getUserIndex(user);
+
+      // if user exists, delete
+      if (index > -1) {
+        c.users.splice(index, 1);
+        return;
+      }
+
+      // add new user
+      c.users.push(user);
     });
 
     socket.on('playCurrentVideo', function (video) {

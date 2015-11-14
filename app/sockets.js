@@ -1,14 +1,23 @@
 // app/sockets.js
 
 module.exports = function (app, io) {
-  var currentVideo = null;
-  var messages = [];
-  var playedVideos = [];
-  var playlist = [];
-  var userArray = [];
-  var userList = [];
+  var currentVideo = null; // keeps track of currently playing video
+  var messages = []; // keeps track of chat messages
+  var playedVideos = []; // keeps track of video history
+  var playlist = []; // keeps track of video queue
+  var userArray = []; // keeps track of unique usernames
+  var userList = []; // keeps track of submitted usernames
 
+  /**
+  * Returns the array index of a submitted username in userArray/userList
+  * @param name String username to check for
+  * @param toggle Boolean indicates which array to search in
+  */
   function getUsernameIndex (name, toggle) {
+    if (!name) {
+      return false;
+    }
+
     if (toggle) {
       return userList.indexOf(name);
     }
@@ -16,19 +25,32 @@ module.exports = function (app, io) {
     return userArray.indexOf(name.toLowerCase());
   }
 
+  /**
+  * Returns the array index of a submitted video in playlist
+  * @param video Object video object to check for
+  */
+  function getVideoIndex (video) {
+    return playlist.map(function (e) { return e.id.videoId; }).indexOf(video.id.videoId);
+  }
+
   io.sockets.on('connection', function (socket) {
     var username;
 
+    // too many connections
     if (userArray.length >= 20) {
       socket.emit('roomFull');
       return;
     }
 
-    socket.emit('refreshMessages', messages);
-    socket.emit('refreshPlaylists', { playlist: playlist, playedVideos: playedVideos });
-    socket.emit('refreshUsers', userList);
+    // send current data to new connection
+    socket.emit('populateInitialData', { currentVideo: currentVideo,
+                                         messages: messages,
+                                         playlist: playlist,
+                                         playedVideos: playedVideos,
+                                         users: userList });
 
-    socket.on('usernameRequest', function (name) {
+    // new user is submitting username
+    socket.on('usernameRequested', function (name) {
       if (getUsernameIndex(name) > -1) {
         socket.emit('usernameError');
         return;
@@ -39,42 +61,46 @@ module.exports = function (app, io) {
       userArray.push(name.toLowerCase());
       userList.push(name);
 
-      // send out new data
-      io.sockets.emit('refreshUsers', userList);
+      // send out new user data
+      io.sockets.emit('addUser', username);
       socket.emit('usernameSuccess');
+    });
 
-      if (currentVideo) {
-        socket.emit('playCurrentVideo', currentVideo);
+    // someone added a video to the queue
+    socket.on('videoAddedToQueue', function (video) {
+      playlist.push(video);
+      io.sockets.emit('addVideoToQueue', video);
+    });
+
+    // someone removed a video from the queue
+    socket.on('videoRemovedFromQueue', function (video) {
+      var index = getVideoIndex(video);
+
+      if (index > -1) {
+        playlist.splice(index, 1);
+        io.sockets.emit('removeVideoFromQueue', video);
       }
     });
 
-    socket.on('playlistAdd', function (video) {
-      playlist.push(video);
-      socket.emit('refreshPlaylists', { playlist: playlist, playedVideos: playedVideos });
-    });
-
-    socket.on('playlistDelete', function (index) {
-      playlist.splice(index, 1);
-      socket.emit('refreshPlaylists', { playlist: playlist, playedVideos: playedVideos });
-    });
-
+    // currently playing video has changed
     socket.on('updateCurrentVideo', function (video) {
       currentVideo = video;
     });
 
+    // someone sent a new message
     socket.on('messageSent', function (data) {
       messages.push(data);
-      io.sockets.emit('refreshMessages', messages);
+      io.sockets.emit('addMessage', data);
     });
 
     socket.on('videoEnded', function (video) {
-      console.log(video);
-      var index = playlist.map(function (e) { return e.id.videoId; }).indexOf(currentVideo.video.id.videoId);
+      var index = getVideoIndex(currentVideo);
 
       playlist.splice(index, 1);
       playedVideos.push(video);
 
-      io.sockets.emit('playNextVideo');
+      io.sockets.emit('removeVideoFromQueue', video);
+      io.sockets.emit('addVideoToHistory', video);
     });
 
     socket.on('disconnect', function () {
