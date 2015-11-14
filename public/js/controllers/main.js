@@ -26,8 +26,10 @@
     c.username = '';
     c.users = [];
 
+    // private variables
     var videoTimer;
 
+    // private methods
     function getUserIndex (user) {
       return c.users.indexOf(user);
     }
@@ -35,10 +37,6 @@
     function getVideoIndex (video) {
       return c.playlist.map(function (e) { return e.id.videoId; }).indexOf(video.id.videoId);
     }
-
-    /**
-    * SOCKET EVENTS
-    */
 
     // room is full
     socket.on('roomFull', function () {
@@ -53,70 +51,7 @@
       c.users = data.users;
     });
 
-    // new chat message
-    socket.on('messageAdded', function (message) {
-      c.messages.push(message);
-
-      $timeout(function () {
-        var $list = $('.message-list');
-        $list.scrollTop($list[0].scrollHeight);
-      }, 0, false);
-    });
-
-    // new/deleted video
-    socket.on('refreshQueue', function (video) {
-      var index = getVideoIndex(video);
-
-      // if video exists, delete
-      if (index > -1) {
-        c.playlist.splice(index, 1);
-        return;
-      }
-
-      // add new video
-      c.playlist.push(video);
-
-      // if it's the first video, play!
-      if (c.playlist.length === 1) {
-        c.current.video = c.playlist[0];
-        c.load();
-      }
-    });
-
-    // new/deleted user
-    socket.on('refreshUsers', function (user) {
-      var index = getUserIndex(user);
-
-      // if user exists, delete
-      if (index > -1) {
-        c.users.splice(index, 1);
-        return;
-      }
-
-      // add new user
-      c.users.push(user);
-    });
-
-    socket.on('playCurrentVideo', function (video) {
-      video.startSeconds = video.startSeconds + 5; // account for lag
-
-      c.current = video;
-      c.load();
-    });
-
-    socket.on('playNextVideo', function () {
-      c.playNextVideo();
-    });
-
-    socket.on('usernameError', function () {
-      alert('Unfortunately, that username is already taken.');
-    });
-
-    socket.on('usernameSuccess', function () {
-      c.showUserOverlay = false;
-    });
-
-    // controller functions
+    // create a username
     c.createUser = function () {
       c.showUserOverlay = true;
     };
@@ -127,7 +62,115 @@
         return;
       }
 
-      socket.emit('usernameRequest', c.username);
+      socket.emit('usernameRequested', c.username);
+    };
+
+    socket.on('usernameError', function () {
+      alert('Sorry, that username is taken.');
+    });
+
+    socket.on('usernameSuccess', function () {
+      c.showUserOverlay = false;
+      socket.emit('getCurrentVideo');
+    });
+
+    socket.on('updateCurrentVideo', function (data) {
+      c.current = data;
+
+      // account for lag
+      c.current.startSeconds = c.current.startSeconds + 3;
+
+      if (c.current.video) {
+        c.load();
+      }
+    });
+
+    // message added to chat
+    c.send = function () {
+      if (!c.message) {
+        alert('Please enter a valid message.');
+        return;
+      }
+
+      socket.emit('messageSent', { username: c.username, message: c.message });
+      c.message = '';
+    };
+
+    socket.on('addMessage', function (message) {
+      c.messages.push(message);
+
+      $timeout(function () {
+        var $list = $('.message-list');
+        $list.scrollTop($list[0].scrollHeight);
+      }, 0, false);
+    });
+
+    // video added to queue
+    c.add = function (index, video) {
+      c.results.splice(index, 1);
+
+      socket.emit('videoAddedToQueue', video);
+    };
+
+    socket.on('addVideoToQueue', function (video) {
+      console.log(video);
+      c.playlist.push(video);
+
+      // if it's the first video, play!
+      if (c.playlist.length === 1) {
+        c.current.video = c.playlist[0];
+        c.load();
+      }
+    });
+
+    // video deleted from queue
+    c.delete = function (video) {
+      socket.emit('videoRemovedFromQueue', video);
+    };
+
+    socket.on('removeVideoFromQueue', function (video) {
+      var index = getVideoIndex(video);
+
+      c.playlist.splice(index, 1);
+    });
+
+    // user connected
+    socket.on('addUser', function (user) {
+      c.users.push(user);
+    });
+
+    // user disconnected
+    socket.on('removeUser', function (user) {
+      var index = getUserIndex(user);
+
+      c.users.splice(index, 1);
+    });
+
+    // video ended
+    socket.on('playNextVideo', function () {
+      c.playNextVideo();
+    });
+
+    c.playNextVideo = function () {
+      if (!c.current.video) {
+        return;
+      }
+
+      var index = getVideoIndex(c.current.video);
+      var nextVideo = c.playlist[index + 1];
+
+      if (!nextVideo) {
+        return;
+      }
+
+      // update playlists
+      c.playedVideos.push(c.playlist[index]);
+      c.playlist.splice(index, 1);
+
+      c.current.video = nextVideo;
+      c.current.startSeconds = 0;
+
+      c.load();
     };
 
     c.search = function () {
@@ -146,65 +189,16 @@
       c.showSearchResults = false;
     };
 
-    c.add = function (index, video) {
-      c.playlist.push(video);
-      c.results.splice(index, 1);
-
-      socket.emit('playlistAdd', video);
-    };
-
     c.load = function () {
-      if (videoTimer) {
-        clearInterval(videoTimer);
-      }
-
       VideoService.launchPlayer(c.current);
-    };
-
-    c.playNextVideo = function () {
-      if (!c.current.video) {
-        return;
-      }
-
-      var index = c.playlist.map(function (e) { return e.id.videoId; }).indexOf(c.current.video.id.videoId);
-      var nextVideo = c.playlist[index + 1];
-
-      // update playlists
-      c.playedVideos.push(c.playlist[index]);
-      c.playlist.splice(index, 1);
-
-      if (!nextVideo) {
-        return;
-      }
-
-      c.current.video = nextVideo;
-      c.current.startSeconds = 0;
-
-      c.load();
-    };
-
-    c.delete = function (index) {
-      c.playlist.splice(index, 1);
-
-      socket.emit('playlistDelete', index);
-    };
-
-    c.send = function () {
-      if (!c.message) {
-        alert('Please enter a valid message.');
-        return;
-      }
-
-      socket.emit('messageSent', { username: c.username, message: c.message });
-      c.message = '';
-    };
-
-    c.showQueue = function () {
-      c.toggleQueue = true;
     };
 
     c.showHistory = function () {
       c.toggleQueue = false;
+    };
+
+    c.showQueue = function () {
+      c.toggleQueue = true;
     };
 
     if (!c.username) {

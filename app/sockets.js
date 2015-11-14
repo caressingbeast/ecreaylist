@@ -1,7 +1,7 @@
 // app/sockets.js
 
 module.exports = function (app, io) {
-  var currentVideo = null; // keeps track of currently playing video
+  var currentVideo = { video: null, startSeconds: 0 }; // keeps track of currently playing video
   var messages = []; // keeps track of chat messages
   var playedVideos = []; // keeps track of video history
   var playlist = []; // keeps track of video queue
@@ -43,8 +43,7 @@ module.exports = function (app, io) {
     }
 
     // send current data to new connection
-    socket.emit('populateInitialData', { currentVideo: currentVideo,
-                                         messages: messages,
+    socket.emit('populateInitialData', { messages: messages,
                                          playlist: playlist,
                                          playedVideos: playedVideos,
                                          users: userList });
@@ -66,6 +65,11 @@ module.exports = function (app, io) {
       socket.emit('usernameSuccess');
     });
 
+    // send current video
+    socket.on('getCurrentVideo', function () {
+      socket.emit('updateCurrentVideo', currentVideo);
+    });
+
     // someone added a video to the queue
     socket.on('videoAddedToQueue', function (video) {
       playlist.push(video);
@@ -76,14 +80,12 @@ module.exports = function (app, io) {
     socket.on('videoRemovedFromQueue', function (video) {
       var index = getVideoIndex(video);
 
-      if (index > -1) {
-        playlist.splice(index, 1);
-        io.sockets.emit('removeVideoFromQueue', video);
-      }
+      playlist.splice(index, 1);
+      io.sockets.emit('removeVideoFromQueue', video);
     });
 
-    // currently playing video has changed
-    socket.on('updateCurrentVideo', function (video) {
+    // currently playing video has updated
+    socket.on('currentVideoUpdated', function (video) {
       currentVideo = video;
     });
 
@@ -93,14 +95,16 @@ module.exports = function (app, io) {
       io.sockets.emit('addMessage', data);
     });
 
+    // currently playing video has ended
     socket.on('videoEnded', function (video) {
-      var index = getVideoIndex(currentVideo);
+      var index = getVideoIndex(video);
 
-      playlist.splice(index, 1);
-      playedVideos.push(video);
+      if (index > -1) {
+        playlist.splice(index, 1);
+        playedVideos.push(video);
+      }
 
-      io.sockets.emit('removeVideoFromQueue', video);
-      io.sockets.emit('addVideoToHistory', video);
+      socket.emit('playNextVideo');
     });
 
     socket.on('disconnect', function () {
@@ -111,11 +115,11 @@ module.exports = function (app, io) {
       userArray.splice(getUsernameIndex(username), 1);
       userList.splice(getUsernameIndex(username, true), 1);
 
-      io.sockets.emit('refreshUsers', userList);
+      io.sockets.emit('removeUser', username);
 
       // clear data if no connections
       if (!userArray.length) {
-        currentVideo = null;
+        currentVideo = { video: null, startSeconds: 0 };
         messages = [];
         playedVideos = [];
         playlist = [];

@@ -16,13 +16,13 @@
     function onPlayerStateChange (event) {
       if (event.data === YT.PlayerState.PLAYING) {
         videoTimer = setInterval(function () {
-          socket.emit('updateCurrentVideo', { video: youtube.video, startSeconds: youtube.player.getCurrentTime() });
-        }, 1000);
+          socket.emit('currentVideoUpdated', { video: youtube.video, startSeconds: youtube.player.getCurrentTime() });
+        }, 500);
       }
 
       if (event.data === YT.PlayerState.ENDED) {
         clearInterval(videoTimer);
-        socket.emit('videoEnded', youtube.video);
+        socket.emit('videoEnded');
       }
     }
 
