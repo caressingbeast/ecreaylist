@@ -11,13 +11,23 @@
       video: null
     };
 
+    var paused = false;
     var videoTimer;
 
     function onPlayerStateChange (event) {
       if (event.data === YT.PlayerState.PLAYING) {
+        if (paused) {
+          socket.emit('videoUnpaused');
+          paused = false;
+        }
+
         videoTimer = setInterval(function () {
           socket.emit('currentVideoUpdated', { video: youtube.video, startSeconds: youtube.player.getCurrentTime() });
         }, 500);
+      }
+
+      if (event.data === YT.PlayerState.PAUSED) {
+        paused = true;
       }
 
       if (event.data === YT.PlayerState.ENDED) {

@@ -279,11 +279,12 @@ label {
 }
 
 .message-list {
-  height: 400px; max-height: 500px;
+  height: 400px; max-height: 400px;
   overflow: auto;
 }
 
 .message-list .empty {
+  padding: 35% 0 0 0;
   color: #ccc;
   font-size: 20px;
   text-align: center;
@@ -321,8 +322,9 @@ label {
   padding: 15px;
 }
 
-.messages-outer textarea {
+.messages-outer input {
   width: 100%;
+  font-size: 13px;
 }
 
 .messages-outer .button {
@@ -348,12 +350,17 @@ label {
 }
 
 .playlist-inner {
-  height: 270px; max-height: 270px;
+  height: 275px; max-height: 275px;
   overflow: auto;
 }
 
 .playlist-video {
   border-top: 1px solid #333613;
+}
+
+.playlist-video.empty {
+  padding: 96px 0 0 0;
+  text-align: center;
 }
 
 .playlist-video div {

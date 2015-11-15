@@ -29,7 +29,9 @@
 
     // private methods
     function setElementSize ($element, height) {
-      $element.css('height', ($element.outerHeight() + height) + 'px');
+      var update = ($element.outerHeight() + height) + 'px';
+
+      $element.css({ 'height': update, 'max-height': update });
     }
 
     function calculateColumns () {
@@ -38,8 +40,11 @@
         var rHeight = $('.video-column').outerHeight();
         var offset = rHeight - lHeight;
 
-        setElementSize($('.message-list'), offset);
-        setElementSize($('.search-results-inner'), offset);
+        if (!c.showSearchResults) {
+          setElementSize($('.message-list'), offset);
+        } else {
+          setElementSize($('.search-results-inner'), offset);
+        }
       }, 0, false);
     }
 
@@ -84,7 +89,6 @@
 
     socket.on('usernameSuccess', function () {
       c.showUserOverlay = false;
-      calculateColumns();
       socket.emit('getCurrentVideo');
     });
 
@@ -97,6 +101,8 @@
       if (c.current.video) {
         c.load();
       }
+
+      calculateColumns();
     });
 
     // message added to chat
@@ -135,13 +141,14 @@
 
     socket.on('addVideoToQueue', function (video) {
       c.playlist.push(video);
-      calculateColumns();
 
       // if it's the first video, play!
       if (c.playlist.length === 1) {
         c.current.video = c.playlist[0];
         c.load();
       }
+
+      calculateColumns();
     });
 
     // video deleted from queue
@@ -153,7 +160,6 @@
       var index = getVideoIndex(video);
 
       c.playlist.splice(index, 1);
-      calculateColumns();
     });
 
     // user connected

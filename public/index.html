@@ -61,8 +61,8 @@
               <span ng-repeat="user in main.users" ng-class="{ 'active': main.username === user }">{{ user }}</span>
             </div>
           </div>
-          <div class="message-list table">
-            <div class="empty table-cell" ng-if="main.messages.length < 1">
+          <div class="message-list">
+            <div class="empty" ng-if="main.messages.length < 1">
               Be the first to say something!
             </div>
             <div class="message" ng-repeat="message in main.messages" ng-class="{ 'active': main.username === message.username }">
@@ -71,8 +71,7 @@
             </div>
           </div>
           <form ng-submit="main.send()">
-            <textarea class="form-input" placeholder="Enter message" ng-model="main.message"></textarea>
-            <button class="button" type="submit">Send</button>
+            <input class="form-input" placeholder="Enter message" ng-model="main.message" />
           </form>
         </div>
       </div>
@@ -84,8 +83,8 @@
           </div>
           <div class="playlist-inner">
             <div class="playlist-queue" ng-if="main.toggleQueue">
-              <div class="playlist-video table" ng-if="main.playlist.length < 2">
-                <div class="table-cell">No videos in queue.</div>
+              <div class="playlist-video empty" ng-if="main.playlist.length < 2">
+                No videos in queue.
               </div>
               <div class="playlist-video table" ng-repeat="video in main.playlist" ng-if="main.current.video.id.videoId !== video.id.videoId">
                 <div class="table-cell">{{ video.snippet.title }}</div>
@@ -93,8 +92,8 @@
               </div>
             </div>
             <div class="playlist-history" ng-if="!main.toggleQueue">
-              <div class="playlist-video" ng-if="main.playedVideos.length < 1">
-                <div class="table-cell">No videos in history.</div>
+              <div class="playlist-video empty" ng-if="main.playedVideos.length < 1">
+                No videos in history.
               </div>
               <div class="playlist-video table" ng-repeat="video in main.playedVideos">
                 <div class="table-cell">{{ video.snippet.title }}</div>

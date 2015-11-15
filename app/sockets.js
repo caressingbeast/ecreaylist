@@ -97,6 +97,11 @@ module.exports = function (io) {
       io.sockets.emit('addMessage', data);
     });
 
+    // currently paused video has been started
+    socket.on('videoUnpaused', function () {
+      socket.emit('updateCurrentVideo', currentVideo);
+    });
+
     // currently playing video has ended
     socket.on('videoEnded', function (video) {
       var index = getVideoIndex(video);
