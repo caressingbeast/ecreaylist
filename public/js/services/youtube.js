@@ -5,10 +5,10 @@
     var s = this;
 
     var youtube = {
-      player: null,
+      player: null, // keeps track of the player object
       ready: false,
       startSeconds: 0,
-      video: null
+      video: null // keeps track of the current video
     };
 
     var paused = false;
@@ -56,9 +56,15 @@
       return youtube;
     };
 
+    /**
+    * Loads the submitted video
+    * @param data {Object} video and start time information
+    * @returns youtube {Object} youtube object
+    */
     s.launchPlayer = function (data) {
       youtube.player.loadVideoById({ videoId: data.video.id.videoId, startSeconds: data.startSeconds });
 
+      // update stored data
       youtube.startSeconds = data.startSeconds;
       youtube.video = data.video;
 
@@ -75,6 +81,11 @@
       }
     };
 
+    /**
+    * Searches YouTube for query results
+    * @param query {String} query to search for
+    * @returns request {Promise}
+    */
     s.search = function (query) {
       return $http.get('https://www.googleapis.com/youtube/v3/search', {
         params: {
