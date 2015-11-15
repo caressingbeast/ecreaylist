@@ -68,7 +68,7 @@
         params: {
           key: 'AIzaSyBGHs_0KIIfF7ho_HYach8KYkNKQKOPvos',
           type: 'video',
-          maxResults: '10',
+          maxResults: '20',
           part: 'id,snippet',
           fields: 'items/id,items/snippet/title,items/snippet/description,items/snippet/thumbnails/default,items/snippet/channelTitle,nextPageToken',
           q: query

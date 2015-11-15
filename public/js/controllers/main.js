@@ -28,6 +28,21 @@
     c.videoPaused = false;
 
     // private methods
+    function setElementSize ($element, height) {
+      $element.css('height', ($element.outerHeight() + height) + 'px');
+    }
+
+    function calculateColumns () {
+      $timeout(function () {
+        var lHeight = $('.messages-column').outerHeight();
+        var rHeight = $('.video-column').outerHeight();
+        var offset = rHeight - lHeight;
+
+        setElementSize($('.message-list'), offset);
+        setElementSize($('.search-results-inner'), offset);
+      }, 0, false);
+    }
+
     function getUserIndex (user) {
       return c.users.indexOf(user);
     }
@@ -69,6 +84,7 @@
 
     socket.on('usernameSuccess', function () {
       c.showUserOverlay = false;
+      calculateColumns();
       socket.emit('getCurrentVideo');
     });
 
@@ -119,6 +135,7 @@
 
     socket.on('addVideoToQueue', function (video) {
       c.playlist.push(video);
+      calculateColumns();
 
       // if it's the first video, play!
       if (c.playlist.length === 1) {
@@ -136,11 +153,13 @@
       var index = getVideoIndex(video);
 
       c.playlist.splice(index, 1);
+      calculateColumns();
     });
 
     // user connected
     socket.on('addUser', function (user) {
       c.users.push(user);
+      calculateColumns();
     });
 
     // user disconnected
@@ -148,6 +167,7 @@
       var index = getUserIndex(user);
 
       c.users.splice(index, 1);
+      calculateColumns();
     });
 
     // video ended
@@ -178,6 +198,7 @@
         .then(function (res) {
           c.results = res.data.items;
           c.showSearchResults = true;
+          calculateColumns();
         }, function (err) {
           console.log(err);
         });
@@ -187,6 +208,7 @@
       c.query = '';
       c.results = [];
       c.showSearchResults = false;
+      calculateColumns();
     };
 
     c.load = function () {

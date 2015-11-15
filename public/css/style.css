@@ -86,6 +86,7 @@ label {
 }
 
 .column {
+  overflow: hidden;
   width: 50%;
 }
 
@@ -177,18 +178,31 @@ label {
   padding: 10px;
 }
 
+.header input {
+  width: 90%;
+}
+
 .header button {
   color: #ccc;
 }
 
 .search-actions {
   background: #f5f5f5;
+  border-bottom: 1px solid #e4e4e4;
 }
 
 .search-actions div {
   padding: 10px 20px;
   color: #999;
   font-size: 18px;
+}
+
+.search-actions .query {
+  max-width: 550px;
+  overflow: hidden;
+  padding: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .search-actions a {
@@ -239,15 +253,19 @@ label {
   font-size: 12px;
 }
 
+.user-list-wrapper {
+  border-bottom: 1px solid #e4e4e4;
+  padding: 15px;
+}
+
 .user-list {
   margin: 0 -5px -5px 0;
   overflow: hidden;
-  padding: 15px;
 }
 
 .user-list span {
   background: #f5f5f5;
-  border: 1px solid #ddd;
+  border: 1px solid #e4e4e4;
   border-radius: 3px;
   display: block;
   float: left;
@@ -260,10 +278,25 @@ label {
   white-space: nowrap;
 }
 
+.message-list {
+  height: 400px; max-height: 500px;
+  overflow: auto;
+}
+
+.message-list .empty {
+  color: #ccc;
+  font-size: 20px;
+  text-align: center;
+}
+
 .message {
-  border-top: 1px solid #f5f5f5;
+  border-bottom: 1px solid #e4e4e4;
   overflow: hidden;
-  font-size: 14px;
+  font-size: 13px;
+}
+
+.message.active {
+  background: #f5f5f5;
 }
 
 .message div {
@@ -284,6 +317,7 @@ label {
 
 .messages-outer form {
   background: #f5f5f5;
+  border-top: 1px solid #e4e4e4;
   padding: 15px;
 }
 
@@ -296,7 +330,7 @@ label {
 }
 
 #player {
-  position: absolute; top: 360; right: 0;
+  position: absolute; right: 0;
   width: 50%; height: 360px;
 }
 
@@ -356,6 +390,7 @@ label {
 
 .footer {
   background: #f5f5f5;
+  border-top: 1px solid #e4e4e4;
   clear: both;
   padding: 30px;
   color: #ccc;

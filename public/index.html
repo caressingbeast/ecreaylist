@@ -32,15 +32,17 @@
         </div>
         <div class="column float-right">
           <form ng-submit="main.search()">
-            <input class="float-left" type="text" placeholder="Search YouTube" ng-model="main.query" />
+            <input class="float-left" type="text" maxlength="45" placeholder="Search YouTube" ng-model="main.query" />
             <button class="float-right" type="submit"><i class="fa fa-search"></i></button>
           </form>
         </div>
       </div>
-      <div class="column float-left">
+      <div class="column float-left messages-column">
         <div class="search-results" ng-if="main.showSearchResults">
           <div class="search-actions table">
-            <div class="table-cell">{{ main.results.length }} results for "{{ main.query }}"</div>
+            <div class="table-cell">
+              <div class="query">{{ main.results.length }} results for "{{ main.query }}"</div>
+            </div>
             <div class="table-cell text-right"><a ng-click="main.clearSearch()"><i class="fa fa-close"></i></a></div>
           </div>
           <div class="search-results-inner">
@@ -54,11 +56,16 @@
           </div>
         </div>
         <div class="messages-outer" ng-if="!main.showSearchResults">
-          <div class="user-list">
-            <span ng-repeat="user in main.users" ng-class="{ 'active': main.username === user }">{{ user }}</span>
+          <div class="user-list-wrapper">
+            <div class="user-list">
+              <span ng-repeat="user in main.users" ng-class="{ 'active': main.username === user }">{{ user }}</span>
+            </div>
           </div>
-          <div class="message-list">
-            <div class="message" ng-repeat="message in main.messages">
+          <div class="message-list table">
+            <div class="empty table-cell" ng-if="main.messages.length < 1">
+              Be the first to say something!
+            </div>
+            <div class="message" ng-repeat="message in main.messages" ng-class="{ 'active': main.username === message.username }">
               <div class="username float-left text-right">{{ message.username }}</div>
               <div class="content float-right">{{ message.message }}</div>
             </div>
@@ -69,7 +76,7 @@
           </form>
         </div>
       </div>
-      <div class="column float-right">
+      <div class="column float-right video-column">
         <div id="player"></div>
         <div class="playlist-outer">
           <div class="playlist-current" ng-if="main.current.video">
@@ -77,7 +84,7 @@
           </div>
           <div class="playlist-inner">
             <div class="playlist-queue" ng-if="main.toggleQueue">
-              <div class="playlist-video" ng-if="main.playlist.length < 2">
+              <div class="playlist-video table" ng-if="main.playlist.length < 2">
                 <div class="table-cell">No videos in queue.</div>
               </div>
               <div class="playlist-video table" ng-repeat="video in main.playlist" ng-if="main.current.video.id.videoId !== video.id.videoId">
