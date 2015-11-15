@@ -278,6 +278,10 @@ label {
   white-space: nowrap;
 }
 
+.user-list span.active {
+  background: #e4e4e4;
+}
+
 .message-list {
   height: 400px; max-height: 400px;
   overflow: auto;
