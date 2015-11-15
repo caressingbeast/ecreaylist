@@ -5,16 +5,17 @@ module.exports = function (io) {
   var messages = []; // keeps track of chat messages
   var playedVideos = []; // keeps track of video history
   var playlist = []; // keeps track of video queue
-  var userArray = []; // keeps track of unique usernames
+  var userArray = []; // keeps track of toLowerCase() usernames (for uniqueness checks)
   var userList = []; // keeps track of submitted usernames
 
   /**
   * Returns the array index of a submitted username in userArray/userList
-  * @param name String username to check for
-  * @param toggle Boolean indicates which array to search in
+  * @param name {String} username to check for
+  * @param toggle {Boolean} indicates which array to search in
+  * @returns {Integer} index of submitted username
   */
-  function getUsernameIndex (name, toggle) {
-    if (toggle) {
+  function getUsernameIndex (name, list) {
+    if (list) {
       return userList.indexOf(name);
     }
 
@@ -23,7 +24,8 @@ module.exports = function (io) {
 
   /**
   * Returns the array index of a submitted video in playlist
-  * @param video Object video to check for
+  * @param video {Object} video to check for
+  * @returns {Integer} index of submitted video
   */
   function getVideoIndex (video) {
     return playlist.map(function (e) { return e.id.videoId; }).indexOf(video.id.videoId);
@@ -32,7 +34,7 @@ module.exports = function (io) {
   io.sockets.on('connection', function (socket) {
     var username;
 
-    // too many connections
+    // limit the number of connections
     if (userArray.length >= 20) {
       socket.emit('roomFull');
       return;
@@ -44,8 +46,13 @@ module.exports = function (io) {
                                          playedVideos: playedVideos,
                                          users: userList });
 
-    // new user is submitting username
+    /**
+    * New user wants to register a username
+    * @param name {String} username to be registered
+    */
     socket.on('usernameRequested', function (name) {
+
+      // if username already registered, exit
       if (getUsernameIndex(name) > -1) {
         socket.emit('usernameError');
         return;
@@ -56,56 +63,88 @@ module.exports = function (io) {
       userArray.push(name.toLowerCase());
       userList.push(name);
 
-      // send out new user data
+      // send out new data
       io.sockets.emit('addUser', username);
       socket.emit('usernameSuccess');
     });
 
-    // send current video
+    /**
+    * New user is requesting the currently playing video (currentVideo)
+    */
     socket.on('getCurrentVideo', function () {
       socket.emit('updateCurrentVideo', currentVideo);
     });
 
-    // someone added a video to the queue
+    /**
+    * User has added a video to the queue
+    * @param video {Object} video to be added
+    */
     socket.on('videoAddedToQueue', function (video) {
       var index = getVideoIndex(video);
 
+      // if video in queue, exit
       if (index > -1) {
         return;
       }
 
+      // update stored data
       playlist.push(video);
+
+      // send out new data
       io.sockets.emit('addVideoToQueue', video);
     });
 
-    // someone removed a video from the queue
+    /**
+    * User has deleted a video from the queue
+    * @param video {Object} video to be removed
+    */
     socket.on('videoRemovedFromQueue', function (video) {
       var index = getVideoIndex(video);
 
+      // if video NOT in queue, exit
+      if (index === -1) {
+        return;
+      }
+
+      // update stored data
       playlist.splice(index, 1);
+
+      // send out new data
       io.sockets.emit('removeVideoFromQueue', video);
     });
 
-    // currently playing video has updated
+    /**
+    * Currently playing video has been updated (new video or elapsed seconds)
+    * @param video {Object} updated video
+    */
     socket.on('currentVideoUpdated', function (video) {
       currentVideo = video;
     });
 
-    // someone sent a new message
+    /**
+    * User has sent a new message
+    * @param data {Object} message to be added
+    */
     socket.on('messageSent', function (data) {
       messages.push(data);
       io.sockets.emit('addMessage', data);
     });
 
-    // currently paused video has been started
+    /**
+    * User has unpaused a video
+    */
     socket.on('videoUnpaused', function () {
       socket.emit('updateCurrentVideo', currentVideo);
     });
 
-    // currently playing video has ended
+    /**
+    * Currently playing video has ended
+    * @param video {Object} recently ended video
+    */
     socket.on('videoEnded', function (video) {
       var index = getVideoIndex(video);
 
+      // if video in queue, process
       if (index > -1) {
         playlist.splice(index, 1);
         playedVideos.push(video);
@@ -114,17 +153,24 @@ module.exports = function (io) {
       socket.emit('playNextVideo', video);
     });
 
+    /**
+    * User has disconnected
+    */
     socket.on('disconnect', function () {
+
+      // if user was a guest, exit
       if (!username) {
         return;
       }
 
+      // update stored data
       userArray.splice(getUsernameIndex(username), 1);
       userList.splice(getUsernameIndex(username, true), 1);
 
+      // send out new data
       io.sockets.emit('removeUser', username);
 
-      // clear data if no connections
+      // if no more connections, reset stored data
       if (!userArray.length) {
         currentVideo = { video: null, startSeconds: 0 };
         messages = [];
