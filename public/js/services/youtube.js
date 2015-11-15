@@ -19,6 +19,7 @@
         if (paused) {
           socket.emit('videoUnpaused');
           paused = false;
+          return;
         }
 
         videoTimer = setInterval(function () {
@@ -27,6 +28,7 @@
       }
 
       if (event.data === YT.PlayerState.PAUSED) {
+        clearInterval(videoTimer);
         paused = true;
       }
 
