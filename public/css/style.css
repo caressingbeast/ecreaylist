@@ -282,6 +282,19 @@ label {
   background: #e4e4e4;
 }
 
+.theme {
+  background: #df1f1f;
+  overflow: hidden;
+  padding: 10px;
+  width: 100%;
+  color: #fff;
+  font-size: 11px;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .message-list {
   height: 400px; max-height: 400px;
   overflow: auto;

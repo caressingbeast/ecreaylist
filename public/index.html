@@ -60,6 +60,9 @@
               <span ng-repeat="user in main.users" ng-class="{ 'active': main.username === user }">{{ user }}</span>
             </div>
           </div>
+          <div class="theme" ng-if="main.theme">
+            theme: {{ main.theme }}
+          </div>
           <div class="message-list">
             <div class="empty" ng-if="main.messages.length < 1">
               Be the first to say something!

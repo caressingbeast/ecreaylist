@@ -1,12 +1,26 @@
 // app/sockets.js
 
 module.exports = function (io) {
+  var currentTheme = null; // keeps track of room theme
   var currentVideo = { video: null, startSeconds: 0 }; // keeps track of currently playing video
   var messages = []; // keeps track of chat messages
   var playedVideos = []; // keeps track of video history
   var playlist = []; // keeps track of video queue
   var userArray = []; // keeps track of toLowerCase() usernames (for uniqueness checks)
   var userList = []; // keeps track of submitted usernames
+
+  /**
+  * Clears existing data
+  */
+  function clearExistingData () {
+    currentTheme = null;
+    currentVideo = { video: null, startSeconds: 0 };
+    messages = [];
+    playedVideos = [];
+    playlist = [];
+    userArray = [];
+    userList = [];
+  }
 
   /**
   * Returns the array index of a submitted username in userArray/userList
@@ -34,6 +48,11 @@ module.exports = function (io) {
   io.sockets.on('connection', function (socket) {
     var username;
 
+    // clear stored data for first connection
+    if (!userArray.length) {
+      clearExistingData();
+    }
+
     // limit the number of connections
     if (userArray.length >= 20) {
       socket.emit('roomFull');
@@ -44,6 +63,7 @@ module.exports = function (io) {
     socket.emit('populateInitialData', { messages: messages,
                                          playlist: playlist,
                                          playedVideos: playedVideos,
+                                         theme: currentTheme,
                                          users: userList });
 
     /**
@@ -122,6 +142,24 @@ module.exports = function (io) {
     });
 
     /**
+    * User has updated room theme
+    * @param theme {String} new theme
+    */
+    socket.on('themeUpdated', function (theme) {
+
+      // if theme is empty, exit
+      if (!theme) {
+        return;
+      }
+
+      // update stored data
+      currentTheme = theme;
+
+      // send out new data
+      io.sockets.emit('updateTheme', theme);
+    });
+
+    /**
     * User has sent a new message
     * @param data {Object} message to be added
     */
@@ -170,14 +208,9 @@ module.exports = function (io) {
       // send out new data
       io.sockets.emit('removeUser', username);
 
-      // if no more connections, reset stored data
+      // if no more connections, clear stored data
       if (!userArray.length) {
-        currentVideo = { video: null, startSeconds: 0 };
-        messages = [];
-        playedVideos = [];
-        playlist = [];
-        userArray = [];
-        userList = [];
+        clearExistingData();
       }
     });
   });

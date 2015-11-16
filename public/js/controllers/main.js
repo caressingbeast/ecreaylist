@@ -16,6 +16,7 @@
     c.results = [];
     c.showSearchResults = false;
     c.showUserOverlay = false;
+    c.theme = null;
     c.toggleQueue = true;
     c.username = '';
     c.users = [];
@@ -27,6 +28,40 @@
       c.youtube = VideoService.getYoutube();
     }
     init();
+
+    /**
+    * Returns the array index of a submitted username in c.users
+    * @param user {String} username to check for
+    * @returns {Integer} index of submitted username
+    */
+    function getUserIndex (user) {
+      return c.users.indexOf(user);
+    }
+
+    /**
+    * Returns the array index of a submitted video in c.playlist
+    * @param video {Object} video to check for
+    * @returns {Integer} index of submitted video
+    */
+    function getVideoIndex (video) {
+      return c.playlist.map(function (e) { return e.id.videoId; }).indexOf(video.id.videoId);
+    }
+
+    /**
+    * Figures out what to do with a new message
+    */
+    function determineMessageEmit () {
+      var theme = '/theme=';
+
+      // user is changing theme
+      if (c.message.indexOf(theme) > -1) {
+        var parts = c.message.split(theme);
+        socket.emit('themeUpdated', parts[1]);
+        return;
+      }
+
+      socket.emit('messageSent', { username: c.username, message: c.message });
+    }
 
     /**
     * Updates submitted element's height and max-height
@@ -54,24 +89,6 @@
           setElementSize($('.search-results-inner'), offset);
         }
       }, 0, false); // surround in a $timeout just to make sure DOM ready
-    }
-
-    /**
-    * Returns the array index of a submitted username in c.users
-    * @param user {String} username to check for
-    * @returns {Integer} index of submitted username
-    */
-    function getUserIndex (user) {
-      return c.users.indexOf(user);
-    }
-
-    /**
-    * Returns the array index of a submitted video in c.playlist
-    * @param video {Object} video to check for
-    * @returns {Integer} index of submitted video
-    */
-    function getVideoIndex (video) {
-      return c.playlist.map(function (e) { return e.id.videoId; }).indexOf(video.id.videoId);
     }
 
     /**
@@ -158,9 +175,18 @@
         return;
       }
 
-      socket.emit('messageSent', { username: c.username, message: c.message });
+      determineMessageEmit();
       c.message = '';
     };
+
+    /**
+    * Updates room theme
+    * @param theme {Object} new theme
+    */
+    socket.on('updateTheme', function (theme) {
+      c.theme = theme;
+      resizeColumns();
+    });
 
     /**
     * Adds new message to c.messages
