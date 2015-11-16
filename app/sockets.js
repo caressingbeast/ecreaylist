@@ -211,6 +211,23 @@ module.exports = function (io) {
     });
 
     /**
+    * User has skipped a video
+    * @param video {Object} video to be skipped
+    */
+    socket.on('videoSkipped', function (video) {
+      var index = getVideoIndex(video);
+
+      // if video in queue, process
+      if (index > -1) {
+        playlist.splice(index, 1);
+        playedVideos.push(video);
+      }
+
+      // broadcast to everyone!!!
+      io.sockets.emit('playNextVideo', video);
+    });
+
+    /**
     * User has disconnected
     */
     socket.on('disconnect', function () {

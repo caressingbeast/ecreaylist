@@ -22,6 +22,8 @@
     c.username = '';
     c.users = [];
 
+    var addedVideos = [];
+
     /**
     * Gets the youtube object from VideoService
     */
@@ -43,10 +45,13 @@
     /**
     * Returns the array index of a submitted video in c.playlist
     * @param video {Object} video to check for
+    * @param arr {Array} array to check in (default is c.playlist)
     * @returns {Integer} index of submitted video
     */
-    function getVideoIndex (video) {
-      return c.playlist.map(function (e) { return e.id.videoId; }).indexOf(video.id.videoId);
+    function getVideoIndex (video, arr) {
+      var arrayToCheck = arr || c.playlist;
+
+      return arrayToCheck.map(function (e) { return e.id.videoId; }).indexOf(video.id.videoId);
     }
 
     /**
@@ -54,6 +59,7 @@
     */
     function determineMessageEmit () {
       var deleteCheck = '/delete=';
+      var skipCheck = '/skipcurrent';
       var themeCheck = '/theme=';
 
       // user is deleting video
@@ -64,6 +70,12 @@
           socket.emit('videoRemovedFromQueue', video);
         }
 
+        return;
+      }
+
+      // user is skipping currently current video
+      if (c.message === skipCheck) {
+        socket.emit('videoSkipped', c.current.video);
         return;
       }
 
@@ -280,7 +292,8 @@
         return;
       }
 
-      // remove video from search results
+      // update stored data
+      addedVideos.push(video);
       c.results.splice(index, 1);
 
       socket.emit('videoAddedToQueue', video);
@@ -291,6 +304,13 @@
     * @param video {Object} video to be added
     */
     socket.on('addVideoToQueue', function (video) {
+      var index = getVideoIndex(video, addedVideos);
+
+      // check if user added it
+      if (index > -1) {
+        video.userCanDelete = true;
+      }
+
       c.playlist.push(video);
 
       // if it's the first video, play!
