@@ -5,19 +5,31 @@
     var s = this;
 
     var youtube = {
-      player: null,
+      player: null, // keeps track of the player object
       ready: false,
       startSeconds: 0,
-      video: null
+      video: null // keeps track of the current video
     };
 
+    var paused = false;
     var videoTimer;
 
     function onPlayerStateChange (event) {
       if (event.data === YT.PlayerState.PLAYING) {
+        if (paused) {
+          socket.emit('videoUnpaused');
+          paused = false;
+          return;
+        }
+
         videoTimer = setInterval(function () {
           socket.emit('currentVideoUpdated', { video: youtube.video, startSeconds: youtube.player.getCurrentTime() });
         }, 500);
+      }
+
+      if (event.data === YT.PlayerState.PAUSED) {
+        clearInterval(videoTimer);
+        paused = true;
       }
 
       if (event.data === YT.PlayerState.ENDED) {
@@ -44,9 +56,15 @@
       return youtube;
     };
 
+    /**
+    * Loads the submitted video
+    * @param data {Object} video and start time information
+    * @returns youtube {Object} youtube object
+    */
     s.launchPlayer = function (data) {
       youtube.player.loadVideoById({ videoId: data.video.id.videoId, startSeconds: data.startSeconds });
 
+      // update stored data
       youtube.startSeconds = data.startSeconds;
       youtube.video = data.video;
 
@@ -63,12 +81,17 @@
       }
     };
 
+    /**
+    * Searches YouTube for query results
+    * @param query {String} query to search for
+    * @returns request {Promise}
+    */
     s.search = function (query) {
       return $http.get('https://www.googleapis.com/youtube/v3/search', {
         params: {
           key: 'AIzaSyBGHs_0KIIfF7ho_HYach8KYkNKQKOPvos',
           type: 'video',
-          maxResults: '10',
+          maxResults: '20',
           part: 'id,snippet',
           fields: 'items/id,items/snippet/title,items/snippet/description,items/snippet/thumbnails/default,items/snippet/channelTitle,nextPageToken',
           q: query
