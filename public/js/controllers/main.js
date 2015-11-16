@@ -125,6 +125,13 @@
     }
 
     /**
+    * Server is requesting status
+    */
+    socket.on('getStatus', function () {
+      socket.emit('statusSent');
+    });
+
+    /**
     * Too many users
     */
     socket.on('roomFull', function () {

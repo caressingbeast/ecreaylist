@@ -45,6 +45,13 @@ module.exports = function (io) {
     return playlist.map(function (e) { return e.id.videoId; }).indexOf(video.id.videoId);
   }
 
+  /**
+  * Requests connection status from clients
+  */
+  function refreshTimeout () {
+    io.sockets.emit('getStatus');
+  }
+
   io.sockets.on('connection', function (socket) {
     var username;
 
@@ -58,6 +65,13 @@ module.exports = function (io) {
       socket.emit('roomFull');
       return;
     }
+
+    /**
+    * Refreshes socket connection (avoids timeout)
+    */
+    socket.on('statusSent', function (status) {
+      console.log('Connection refreshed.');
+    });
 
     // send current data to new connection
     socket.emit('populateInitialData', { messages: messages,
@@ -219,4 +233,6 @@ module.exports = function (io) {
       }
     });
   });
+
+  setTimeout(refreshTimeout, 10000);
 };
