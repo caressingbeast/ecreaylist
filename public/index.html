@@ -103,8 +103,8 @@
             </div>
           </div>
           <div class="playlist-actions table">
-            <div class="table-cell" ng-click="main.showQueue()" ng-class="{ 'active': main.toggleQueue }">Queue</div>
-            <div class="table-cell" ng-click="main.showHistory()" ng-class="{ 'active': !main.toggleQueue }">History</div>
+            <div class="table-cell" ng-click="main.showQueue()" ng-class="{ 'active': main.toggleQueue }">Queue ({{ main.playlist.length }})</div>
+            <div class="table-cell" ng-click="main.showHistory()" ng-class="{ 'active': !main.toggleQueue }">History ({{ main.playedVideos.length }})</div>
           </div>
         </div>
       </div>
