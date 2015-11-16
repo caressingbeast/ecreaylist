@@ -27,6 +27,7 @@
     */
     function init () {
       c.youtube = VideoService.getYoutube();
+      requestNotificationPermission(); // hopefully they say yes >.<
     }
     init();
 
@@ -90,6 +91,36 @@
           setElementSize($('.search-results-inner'), offset);
         }
       }, 0, false); // surround in a $timeout just to make sure DOM ready
+    }
+
+    /**
+     * Run before createNotification()
+     * in order to be able to use WebNotifications
+     */
+    function requestNotificationPermission() {
+      // essentially checks for IE/Edge
+      if (window.hasOwnProperty('Notification')) {
+        Notification.requestPermission();
+      }
+    }
+
+    /**
+     * Create's a notification that alerts the user even
+     * when they are not on the current page.
+     * @param {string} title gives notification a heading
+     * @param {string} body content for the notification
+     */
+    function createNotification(title, body) {
+      // unnecessary evil
+      if (window.hasOwnProperty('Notification')) {
+        var notification = new Notification(title, {
+          body: body,
+          icon: 'tbd.gif' // todo: add little logo or avatar path here
+        });
+
+        // show the notification for a max of 3s (does not autoclose on Chrome)
+        setTimeout(notification.close.bind(notification), 3000);
+      }
     }
 
     /**
@@ -195,6 +226,10 @@
     */
     socket.on('addMessage', function (message) {
       c.messages.push(message);
+      // only notify if another user sent a message
+      if (c.username !== message.username) {
+        createNotification(message.username, message.message);
+      }
 
       // scroll to bottom of message list
       $timeout(function () {
