@@ -22,7 +22,7 @@
     c.username = '';
     c.users = [];
 
-    var addedVideos = [];
+    var addedVideos = []; // tracks videos that user has added
 
     /**
     * Gets the youtube object from VideoService
