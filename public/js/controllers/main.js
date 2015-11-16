@@ -146,6 +146,7 @@
       if (data.messages) c.messages = data.messages;
       if (data.playedVideos) c.playedVideos = data.playedVideos;
       if (data.playlist) c.playlist = data.playlist;
+      if (data.theme) c.theme = data.theme;
       if (data.users) c.users = data.users;
     });
 
