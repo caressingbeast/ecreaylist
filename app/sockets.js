@@ -8,6 +8,7 @@ module.exports = function (io) {
   var playlist = []; // keeps track of video queue
   var userArray = []; // keeps track of toLowerCase() usernames (for uniqueness checks)
   var userList = []; // keeps track of submitted usernames
+  var votes = { upvotes: 0, downvotes: 0 };
 
   /**
   * Clears existing data
@@ -20,6 +21,21 @@ module.exports = function (io) {
     playlist = [];
     userArray = [];
     userList = [];
+  }
+
+  function calculateVotes (type) {
+    var count = userArray.length;
+    var threshold = Math.round(count / 2);
+
+    if (type === 'upvote') {
+      votes.upvotes++;
+    } else {
+      votes.downvotes++;
+    }
+
+    if ((count + votes.upvotes - votes.downvotes) < threshold) {
+      io.sockets.emit('playNextVideo', currentVideo);
+    }
   }
 
   /**

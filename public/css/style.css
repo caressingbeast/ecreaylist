@@ -366,6 +366,26 @@ label {
   font-size: 20px;
 }
 
+.playlist-current .voting {
+  padding: 0 0 0 20px;
+  width: 18px;
+  line-height: 1.25;
+}
+
+.playlist-current .voting a {
+  color: #727785;
+}
+
+.playlist-current .voting .upvote:hover,
+.playlist-current .voting .upvote.active  {
+  color: green
+}
+
+.playlist-current .voting .downvote:hover,
+.playlist-current .voting .downvote.active {
+  color: #e80044;
+}
+
 .playlist-inner {
   height: 275px; max-height: 275px;
   overflow: auto;
