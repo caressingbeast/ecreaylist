@@ -27,7 +27,7 @@
     */
     function init () {
       c.youtube = VideoService.getYoutube();
-      requestNotificationPermission(); // hopefully they say yes >.<
+      requestNotificationPermission(); // check for notification functionality
     }
     init();
 
@@ -98,6 +98,7 @@
      * in order to be able to use WebNotifications
      */
     function requestNotificationPermission() {
+
       // essentially checks for IE/Edge
       if (window.hasOwnProperty('Notification')) {
         Notification.requestPermission();
@@ -105,20 +106,20 @@
     }
 
     /**
-     * Create's a notification that alerts the user even
-     * when they are not on the current page.
-     * @param {string} title gives notification a heading
-     * @param {string} body content for the notification
+     * Creates a browser notification alert
+     * @param title {String} heading of notification
+     * @param body {String} content of notification
      */
     function createNotification(title, body) {
+
       // unnecessary evil
       if (window.hasOwnProperty('Notification')) {
         var notification = new Notification(title, {
           body: body,
-          icon: 'tbd.gif' // todo: add little logo or avatar path here
+          icon: 'tbd.gif' // TODO: add logo or avatar path here
         });
 
-        // show the notification for a max of 3s (does not autoclose on Chrome)
+        // show notification for a max of 3s
         setTimeout(notification.close.bind(notification), 3000);
       }
     }
@@ -226,7 +227,8 @@
     */
     socket.on('addMessage', function (message) {
       c.messages.push(message);
-      // only notify if another user sent a message
+
+      // don't notify originator of new message
       if (c.username !== message.username) {
         createNotification(message.username, message.message);
       }
