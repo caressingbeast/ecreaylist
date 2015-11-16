@@ -42,6 +42,7 @@
       return new YT.Player('player', {
         width: '100%',
         playerVars: {
+          controls: 0,
           rel: 0,
           showInfo: 0
         },
