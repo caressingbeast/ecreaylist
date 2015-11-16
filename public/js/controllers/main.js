@@ -13,6 +13,7 @@
     c.playedVideos = [];
     c.playlist = [];
     c.query = '';
+    c.lastQuery = '';
     c.results = [];
     c.showSearchResults = false;
     c.showUserOverlay = false;
@@ -313,6 +314,7 @@
     c.search = function () {
       VideoService.search(c.query)
         .then(function (res) {
+          c.lastQuery = c.query;
           c.results = res.data.items;
           c.showSearchResults = true;
           resizeColumns();
@@ -326,6 +328,7 @@
     */
     c.clearSearch = function () {
       c.query = '';
+      c.lastQuery = '';
       c.results = [];
       c.showSearchResults = false;
       resizeColumns();
