@@ -75,7 +75,12 @@
 
       // user is skipping currently current video
       if (c.message === skipCheck) {
-        socket.emit('videoSkipped', c.current.video);
+
+        // make sure there is a next video
+        if (c.playlist.length) {
+          socket.emit('videoSkipped', c.current.video);
+        }
+
         return;
       }
 
