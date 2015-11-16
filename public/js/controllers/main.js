@@ -136,6 +136,16 @@
     }
 
     /**
+    * Scrolls to bottom of message list
+    */
+    function scrollMessageList () {
+      $timeout(function () {
+        var $list = $('.message-list');
+        $list.scrollTop($list[0].scrollHeight);
+      }, 0, false);
+    }
+
+    /**
     * Server is requesting status
     */
     socket.on('getStatus', function () {
@@ -253,10 +263,7 @@
       }
 
       // scroll to bottom of message list
-      $timeout(function () {
-        var $list = $('.message-list');
-        $list.scrollTop($list[0].scrollHeight);
-      }, 0, false);
+      scrollMessageList();
     });
 
     /**
@@ -388,6 +395,7 @@
       c.results = [];
       c.showSearchResults = false;
       resizeColumns();
+      scrollMessageList();
     };
 
     /**
