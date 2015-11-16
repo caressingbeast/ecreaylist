@@ -53,12 +53,23 @@
     * Figures out what to do with a new message
     */
     function determineMessageEmit () {
-      var theme = '/theme=';
+      var deleteCheck = '/delete=';
+      var themeCheck = '/theme=';
+
+      // user is deleting video
+      if (c.message.indexOf(deleteCheck) > -1) {
+        var video = c.playlist[c.message.split(deleteCheck)[1]];
+
+        if (video && c.current.video.id.videoId !== video.id.videoId) {
+          socket.emit('videoRemovedFromQueue', video);
+        }
+
+        return;
+      }
 
       // user is changing theme
-      if (c.message.indexOf(theme) > -1) {
-        var parts = c.message.split(theme);
-        socket.emit('themeUpdated', parts[1]);
+      if (c.message.indexOf(themeCheck) > -1) {
+        socket.emit('themeUpdated', c.message.split(themeCheck)[1]);
         return;
       }
 
