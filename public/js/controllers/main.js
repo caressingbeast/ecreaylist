@@ -104,10 +104,10 @@
     * @param data {Object} existing data to cache
     */
     socket.on('populateInitialData', function (data) {
-      c.messages = data.messages;
-      c.playedVideos = data.playedVideos;
-      c.playlist = data.playlist;
-      c.users = data.users;
+      if (data.messages) c.messages = data.messages;
+      if (data.playedVideos) c.playedVideos = data.playedVideos;
+      if (data.playlist) c.playlist = data.playlist;
+      if (data.users) c.users = data.users;
     });
 
     /**

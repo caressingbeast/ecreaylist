@@ -61,8 +61,8 @@ module.exports = function (io) {
 
     // send current data to new connection
     socket.emit('populateInitialData', { messages: messages,
-                                         playlist: playlist,
                                          playedVideos: playedVideos,
+                                         playlist: playlist,
                                          theme: currentTheme,
                                          users: userList });
 
@@ -172,6 +172,11 @@ module.exports = function (io) {
     * User has unpaused a video
     */
     socket.on('videoUnpaused', function () {
+
+      // send updated playlists
+      socket.emit('populateInitialData', { playedVideos: playedVideos, playlist: playlist });
+
+      // send current video
       socket.emit('updateCurrentVideo', currentVideo);
     });
 
