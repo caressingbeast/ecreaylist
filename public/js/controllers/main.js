@@ -423,14 +423,14 @@
       var index = getVideoIndex(video);
       var nextVideo = c.playlist[index + 1];
 
+      // update playlists
+      c.playedVideos.push(video);
+      c.playlist.splice(index, 1);
+
       // if no videos left in queue, exit
       if (!nextVideo) {
         return;
       }
-
-      // update playlists
-      c.playedVideos.push(video);
-      c.playlist.splice(index, 1);
 
       c.current.video = nextVideo;
       c.current.startSeconds = 0;

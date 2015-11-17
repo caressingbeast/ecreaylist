@@ -9,6 +9,8 @@ module.exports = function (io) {
   var playlist = []; // keeps track of video queue
   var userArray = []; // keeps track of toLowerCase() usernames (for uniqueness checks)
   var userList = []; // keeps track of submitted usernames
+  var videoEndedCount = 0;
+  var videoEndedTimer = null;
   var votes = { upvotes: 0, downvotes: 0 }; // tracks upvotes/downvotes
 
   /**
@@ -23,6 +25,8 @@ module.exports = function (io) {
     playlist = [];
     userArray = [];
     userList = [];
+    videoEndedCount = 0;
+    videoEndedTimer = null;
     votes = { upvotes: 0, downvotes: 0 };
   }
 
@@ -73,6 +77,27 @@ module.exports = function (io) {
 
       socket.emit('playNextVideo', video);
     }
+  }
+
+  /**
+  * Makes sure all users have finished video before moving on to the next
+  * @param video {Object} currently playing video
+  * @param socket {Object} socket connection
+  */
+  function checkVideoEndedCount (video, socket) {
+
+    // if not everyone has finished, wait around
+    if (userArray.length !== videoEndedCount) {
+      videoEndedTimer = setInterval(function () {
+        checkVideoEndedCount();
+      }, 1000);
+      return;
+    }
+
+    // move on to the next video
+    playNextVideo(currentVideo.video, socket, true);
+    videoEndedCount = 0;
+    clearInterval(videoEndedTimer);
   }
 
   /**
@@ -279,7 +304,9 @@ module.exports = function (io) {
     * @param video {Object} video that ended
     */
     socket.on('videoEnded', function (video) {
-      playNextVideo(video, socket);
+      videoEndedCount++;
+
+      checkVideoEndedCount(video, socket);
     });
 
     /**
