@@ -45,7 +45,7 @@
     /**
     * Returns the array index of a submitted video in c.playlist
     * @param video {Object} video to check for
-    * @param arr {Array} array to check in (default is c.playlist)
+    * @param arr {Array} array to check in (defaults to c.playlist if undefined)
     * @returns {Integer} index of submitted video
     */
     function getVideoIndex (video, arr) {
@@ -73,12 +73,12 @@
         return;
       }
 
-      // user is skipping currently current video
+      // user is skipping current video
       if (c.message === skipCheck) {
 
         // make sure there is a next video
-        if (c.playlist.length) {
-          socket.emit('videoSkipped', c.current.video);
+        if (c.playlist.length > 1) {
+          socket.emit('videoEnded', c.current.video, true);
         }
 
         return;

@@ -198,7 +198,7 @@ module.exports = function (io) {
     * Currently playing video has ended
     * @param video {Object} recently ended video
     */
-    socket.on('videoEnded', function (video) {
+    socket.on('videoEnded', function (video, broadcast) {
       var index = getVideoIndex(video);
 
       // if video in queue, process
@@ -207,24 +207,11 @@ module.exports = function (io) {
         playedVideos.push(video);
       }
 
-      socket.emit('playNextVideo', video);
-    });
-
-    /**
-    * User has skipped a video
-    * @param video {Object} video to be skipped
-    */
-    socket.on('videoSkipped', function (video) {
-      var index = getVideoIndex(video);
-
-      // if video in queue, process
-      if (index > -1) {
-        playlist.splice(index, 1);
-        playedVideos.push(video);
+      if (broadcast) { // broadcast to everyone!!!
+        io.sockets.emit('playNextVideo', video);
+      } else {
+        socket.emit('playNextVideo', video);
       }
-
-      // broadcast to everyone!!!
-      io.sockets.emit('playNextVideo', video);
     });
 
     /**
