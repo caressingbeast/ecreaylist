@@ -161,20 +161,6 @@
     });
 
     /**
-    * Submits username to server
-    */
-    c.saveUser = function () {
-
-      // if no username, exit
-      if (!c.username) {
-        alert('Please enter a valid username.');
-        return;
-      }
-
-      socket.emit('usernameRequested', c.username);
-    };
-
-    /**
     * Shows registration overlay
     */
     c.createUser = function () {
@@ -191,6 +177,20 @@
       $timeout(function () {
         $('.overlay-inner input').focus();
       }, 0, false);
+    };
+
+    /**
+    * Submits username to server
+    */
+    c.saveUser = function () {
+
+      // if no username, exit
+      if (!c.username) {
+        alert('Please enter a valid username.');
+        return;
+      }
+
+      socket.emit('usernameRequested', c.username);
     };
 
     /**
