@@ -477,7 +477,6 @@
     * Loads current video (c.current)
     */
     c.load = function () {
-      console.log(c.current.video.snippet.title);
       VideoService.launchPlayer(c.current);
     };
 
