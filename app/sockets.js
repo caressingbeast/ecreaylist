@@ -297,9 +297,7 @@ module.exports = function (io) {
     * @param video {Object} video that ended
     */
     socket.on('videoEnded', function (video) {
-      videoEndedCount++;
-
-      checkVideoEndedCount(video, socket);
+      playNextVideo(video, socket);
     });
 
     /**
