@@ -22,8 +22,6 @@
     c.username = '';
     c.users = [];
 
-    var addedVideos = []; // tracks videos that user has added
-
     /**
     * Gets the youtube object from VideoService
     */
@@ -310,8 +308,10 @@
         return;
       }
 
-      // update stored data
-      addedVideos.push(video);
+      // add username
+      video.username = c.username;
+
+      // remove from search results
       c.results.splice(index, 1);
 
       socket.emit('videoAddedToQueue', video);
@@ -322,13 +322,6 @@
     * @param video {Object} video to be added
     */
     socket.on('addVideoToQueue', function (video) {
-      var index = getVideoIndex(video, addedVideos);
-
-      // check if user added it
-      if (index > -1) {
-        video.userCanDelete = true;
-      }
-
       c.playlist.push(video);
 
       // if it's the first video, play!
