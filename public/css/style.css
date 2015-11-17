@@ -330,7 +330,6 @@ label {
 }
 
 .message .content {
-  overflow: hidden;
   width: 78%;
 }
 
