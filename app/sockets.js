@@ -70,7 +70,7 @@ module.exports = function (io) {
     * Refreshes socket connection (avoids timeout)
     */
     socket.on('statusSent', function () {
-      console.log('Connection refreshed.');
+      // do nothing
     });
 
     // send current data to new connection
@@ -196,18 +196,22 @@ module.exports = function (io) {
 
     /**
     * Currently playing video has ended
-    * @param video {Object} recently ended video
+    * @param data {Object} { video: ended/skipped video, skipped: true (optional) }
     */
-    socket.on('videoEnded', function (video) {
-      var index = getVideoIndex(video);
+    socket.on('videoEnded', function (data) {
+      var index = getVideoIndex(data.video);
 
       // if video in queue, process
       if (index > -1) {
         playlist.splice(index, 1);
-        playedVideos.push(video);
+        playedVideos.push(data.video);
       }
 
-      socket.emit('playNextVideo', video);
+      if (data.skipped) { // broadcast to everyone!!!
+        io.sockets.emit('playNextVideo', data.video);
+      } else {
+        socket.emit('playNextVideo', data.video);
+      }
     });
 
     /**
@@ -234,5 +238,5 @@ module.exports = function (io) {
     });
   });
 
-  setTimeout(refreshTimeout, 10000);
+  setInterval(refreshTimeout, 15000);
 };

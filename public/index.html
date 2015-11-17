@@ -90,7 +90,7 @@
               </div>
               <div class="playlist-video table" ng-repeat="video in main.playlist" ng-if="main.current.video.id.videoId !== video.id.videoId">
                 <div class="table-cell">{{ video.snippet.title }}</div>
-                <div class="table-cell delete" ng-click="main.delete(video)">delete</div>
+                <div class="table-cell delete" ng-click="main.delete(video)" ng-if="video.userCanDelete">delete</div>
               </div>
             </div>
             <div class="playlist-history" ng-if="!main.toggleQueue">

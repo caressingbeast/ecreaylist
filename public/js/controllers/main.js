@@ -22,6 +22,8 @@
     c.username = '';
     c.users = [];
 
+    var addedVideos = []; // tracks videos that user has added
+
     /**
     * Gets the youtube object from VideoService
     */
@@ -43,22 +45,48 @@
     /**
     * Returns the array index of a submitted video in c.playlist
     * @param video {Object} video to check for
+    * @param arr {Array} array to check in (defaults to c.playlist if undefined)
     * @returns {Integer} index of submitted video
     */
-    function getVideoIndex (video) {
-      return c.playlist.map(function (e) { return e.id.videoId; }).indexOf(video.id.videoId);
+    function getVideoIndex (video, arr) {
+      var arrayToCheck = arr || c.playlist;
+
+      return arrayToCheck.map(function (e) { return e.id.videoId; }).indexOf(video.id.videoId);
     }
 
     /**
     * Figures out what to do with a new message
     */
     function determineMessageEmit () {
-      var theme = '/theme=';
+      var deleteCheck = '/delete=';
+      var skipCheck = '/skipcurrent';
+      var themeCheck = '/theme=';
+
+      // user is deleting video
+      if (c.message.indexOf(deleteCheck) > -1) {
+        var video = c.playlist[c.message.split(deleteCheck)[1]];
+
+        if (video && c.current.video.id.videoId !== video.id.videoId) {
+          socket.emit('videoRemovedFromQueue', video);
+        }
+
+        return;
+      }
+
+      // user is skipping current video
+      if (c.message === skipCheck) {
+
+        // make sure there is a next video
+        if (c.playlist.length > 1) {
+          socket.emit('videoEnded', { video: c.current.video, skipped: true });
+        }
+
+        return;
+      }
 
       // user is changing theme
-      if (c.message.indexOf(theme) > -1) {
-        var parts = c.message.split(theme);
-        socket.emit('themeUpdated', parts[1]);
+      if (c.message.indexOf(themeCheck) > -1) {
+        socket.emit('themeUpdated', c.message.split(themeCheck)[1]);
         return;
       }
 
@@ -282,7 +310,8 @@
         return;
       }
 
-      // remove video from search results
+      // update stored data
+      addedVideos.push(video);
       c.results.splice(index, 1);
 
       socket.emit('videoAddedToQueue', video);
@@ -293,6 +322,13 @@
     * @param video {Object} video to be added
     */
     socket.on('addVideoToQueue', function (video) {
+      var index = getVideoIndex(video, addedVideos);
+
+      // check if user added it
+      if (index > -1) {
+        video.userCanDelete = true;
+      }
+
       c.playlist.push(video);
 
       // if it's the first video, play!
