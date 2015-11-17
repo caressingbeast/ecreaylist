@@ -70,7 +70,7 @@ module.exports = function (io) {
     * Refreshes socket connection (avoids timeout)
     */
     socket.on('statusSent', function () {
-      console.log('Connection refreshed.');
+      console.log(username + ' connection refreshed...');
     });
 
     // send current data to new connection
@@ -238,5 +238,5 @@ module.exports = function (io) {
     });
   });
 
-  setTimeout(refreshTimeout, 10000);
+  setInterval(refreshTimeout, 15000);
 };
