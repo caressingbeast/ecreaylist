@@ -46,13 +46,6 @@
     init();
 
     /**
-    * Removes active class from voting buttons
-    */
-    function clearVotingButtons () {
-      $('#player-overlay a').removeClass('active');
-    }
-
-    /**
      * Creates a browser notification alert
      * @param title {String} heading of notification
      * @param body {String} content of notification
@@ -95,8 +88,7 @@
 
         // make sure there is a next video
         if (c.playlist.length > 1) {
-          console.log('Hit');
-          socket.emit('videoEnded', { video: c.current.video, skipped: true });
+          socket.emit('videoSkipped', c.current.video);
         }
 
         return;
@@ -405,10 +397,8 @@
         return;
       }
 
-      clearVotingButtons();
-      $('#player-overlay .upvote').addClass('active');
       c.userVote = 'upvote';
-      socket.emit('upvote');
+      socket.emit('upvote', c.current.video);
     };
 
     /**
@@ -421,8 +411,6 @@
         return;
       }
 
-      clearVotingButtons();
-      $('#player-overlay .downvote').addClass('active');
       c.userVote = 'downvote';
       socket.emit('downvote', c.current.video);
     };
@@ -435,15 +423,14 @@
       var index = getVideoIndex(video);
       var nextVideo = c.playlist[index + 1];
 
-      // update playlists
-      c.playedVideos.push(c.playlist[index]);
-      c.playlist.splice(index, 1);
-
       // if no videos left in queue, exit
       if (!nextVideo) {
-        c.youtube.player.stop();
         return;
       }
+
+      // update playlists
+      c.playedVideos.push(video);
+      c.playlist.splice(index, 1);
 
       c.current.video = nextVideo;
       c.current.startSeconds = 0;
@@ -490,6 +477,7 @@
     * Loads current video (c.current)
     */
     c.load = function () {
+      console.log(c.current.video.snippet.title);
       VideoService.launchPlayer(c.current);
     };
 
