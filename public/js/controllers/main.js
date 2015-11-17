@@ -137,10 +137,10 @@
           // or force the user for notifications once set.
           // Separate flag is for easier toggling on the user.
           if (permission === 'granted') {
-            localStorage.setItem('sfm-notifications', true);
+            sessionStorage.setItem('sfm-notifications', true);
             $notificationIcon.addClass('fa-bell');
           } else if (permission === 'denied') {
-            localStorage.setItem('sfm-notifications', false);
+            sessionStorage.setItem('sfm-notifications', false);
             $notificationIcon.addClass('fa-bell-o');
           }
         });
@@ -304,7 +304,7 @@
       // don't notify originator of new message
       if (c.username !== message.username) {
         // check if user's setting still allows for Web Notifications
-        if (localStorage.getItem('sfm-notifications') === 'true') {
+        if (sessionStorage.getItem('sfm-notifications') === 'true') {
           createNotification(message.username, message.message);
         }
       }
@@ -479,12 +479,12 @@
      */
     c.toggleNotifications = function () {
       try {
-        var notificationsSetting = localStorage.getItem('sfm-notifications');
+        var notificationsSetting = sessionStorage.getItem('sfm-notifications');
         var $notificationIcon = $('#notificationIcon');
 
         notificationsSetting = notificationsSetting === 'true'; // convert to Boolean
         notificationsSetting = !notificationsSetting; // invert
-        localStorage.setItem('sfm-notifications', notificationsSetting); // invert
+        sessionStorage.setItem('sfm-notifications', notificationsSetting); // invert
 
         // reset icon
         $notificationIcon.removeClass('fa-bell fa-bell-o');
