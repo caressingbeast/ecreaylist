@@ -178,6 +178,7 @@ module.exports = function (io) {
     * @param data {Object} message to be added
     */
     socket.on('messageSent', function (data) {
+      data.timestamp = new Date(); // add timestamp      
       messages.push(data);
       io.sockets.emit('addMessage', data);
     });
