@@ -69,7 +69,7 @@ module.exports = function (io) {
     /**
     * Refreshes socket connection (avoids timeout)
     */
-    socket.on('statusSent', function (status) {
+    socket.on('statusSent', function () {
       console.log('Connection refreshed.');
     });
 
