@@ -78,7 +78,7 @@
 
         // make sure there is a next video
         if (c.playlist.length > 1) {
-          socket.emit('videoEnded', c.current.video, true);
+          socket.emit('videoEnded', { video: c.current.video, skipped: true });
         }
 
         return;

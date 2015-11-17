@@ -198,19 +198,19 @@ module.exports = function (io) {
     * Currently playing video has ended
     * @param video {Object} recently ended video
     */
-    socket.on('videoEnded', function (video, broadcast) {
-      var index = getVideoIndex(video);
+    socket.on('videoEnded', function (data) {
+      var index = getVideoIndex(data.video);
 
       // if video in queue, process
       if (index > -1) {
         playlist.splice(index, 1);
-        playedVideos.push(video);
+        playedVideos.push(data.video);
       }
 
-      if (broadcast) { // broadcast to everyone!!!
-        io.sockets.emit('playNextVideo', video);
+      if (data.skipped) { // broadcast to everyone!!!
+        io.sockets.emit('playNextVideo', data.video);
       } else {
-        socket.emit('playNextVideo', video);
+        socket.emit('playNextVideo', data.video);
       }
     });
 
