@@ -17,15 +17,13 @@
     c.results = [];
     c.showSearchResults = false;
     c.showUserOverlay = false;
-    c.showVotingButtons = false;
     c.theme = null;
     c.toggleQueue = true;
     c.username = '';
     c.users = [];
 
     var addedVideos = []; // tracks videos that user has added
-    var downvotes = 0;
-    var upvotes = 0;
+    var hasVoted = false;
 
     /**
      * Run before createNotification()
@@ -349,7 +347,6 @@
       }
 
       // resize columns
-      checkToShowVotingButtons();
       resizeColumns();
     });
 
@@ -369,8 +366,6 @@
       var index = getVideoIndex(video);
 
       c.playlist.splice(index, 1);
-
-      checkToShowVotingButtons();
     });
 
     /**
@@ -397,28 +392,32 @@
     * Upvotes the currently playing video
     */
     c.upvote = function () {
+
+      // if already voted, exit
+      if (hasVoted) {
+        return;
+      }
+
       clearVotingButtons();
       $('.playlist-current .upvote').addClass('active');
-
-      if (upvotes === 0) {
-        downvotes = 0;
-        upvotes++;
-        socket.emit('upvote');
-      }
+      hasVoted = true;
+      socket.emit('upvote');
     };
 
     /**
     * Downvotes the currently playing video
     */
     c.downvote = function () {
+
+      // if already voted, exit
+      if (hasVoted) {
+        return;
+      }
+
       clearVotingButtons();
       $('.playlist-current .downvote').addClass('active');
-
-      if (downvotes === 0) {
-        upvotes = 0;
-        downvotes++;
-        socket.emit('downvote');
-      }
+      hasVoted = true;
+      socket.emit('downvote');
     };
 
     /**
@@ -428,6 +427,8 @@
     c.playNextVideo = function (video) {
       var index = getVideoIndex(video);
       var nextVideo = c.playlist[index + 1];
+
+      console.log(video, index);
 
       // update playlists
       c.playedVideos.push(c.playlist[index]);
@@ -482,8 +483,15 @@
     * Loads current video (c.current)
     */
     c.load = function () {
-      checkToShowVotingButtons();
       clearVotingButtons();
+
+      // show voting buttons if the video wasn't added by user
+      if (getVideoIndex(c.current.video, addedVideos) === -1) {
+        c.showVotingButtons = true;
+      } else {
+        c.showVotingButtons = false;
+      }
+
       VideoService.launchPlayer(c.current);
     };
 
