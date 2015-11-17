@@ -357,6 +357,10 @@ label {
   margin: 0;
 }
 
+#notificationIcon {
+  cursor: pointer;
+}
+
 #player {
   position: absolute; right: 0;
   width: 50%; height: 360px;
