@@ -432,7 +432,6 @@
     * @param video {Object} recently ended video
     */
     c.playNextVideo = function (video) {
-      console.log(video);
       var index = getVideoIndex(video);
       var nextVideo = c.playlist[index + 1];
 
