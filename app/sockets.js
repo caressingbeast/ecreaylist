@@ -8,7 +8,7 @@ module.exports = function (io) {
   var playlist = []; // keeps track of video queue
   var userArray = []; // keeps track of toLowerCase() usernames (for uniqueness checks)
   var userList = []; // keeps track of submitted usernames
-  var votes = { upvotes: 0, downvotes: 0 };
+  var votes = { upvotes: 0, downvotes: 0 }; // tracks upvotes/downvotes
 
   /**
   * Clears existing data
@@ -21,21 +21,7 @@ module.exports = function (io) {
     playlist = [];
     userArray = [];
     userList = [];
-  }
-
-  function calculateVotes (type) {
-    var count = userArray.length;
-    var threshold = Math.round(count / 2);
-
-    if (type === 'upvote') {
-      votes.upvotes++;
-    } else {
-      votes.downvotes++;
-    }
-
-    if ((count + votes.upvotes - votes.downvotes) < threshold) {
-      io.sockets.emit('playNextVideo', currentVideo);
-    }
+    votes = { upvotes: 0, downvotes: 0 };
   }
 
   /**
@@ -217,6 +203,36 @@ module.exports = function (io) {
 
       // send current video
       socket.emit('updateCurrentVideo', currentVideo);
+    });
+
+    /**
+    * Currently playing video has been upvoted
+    */
+    socket.on('upvote', function () {
+      votes.upvotes++;
+    });
+
+    /**
+    * Currently playing video has been downvoted
+    */
+    socket.on('downvote', function () {
+      var index = getVideoIndex(currentVideo.video);
+      var threshold = 0 - Math.round(userArray.length / 2);
+
+      votes.downvotes++;
+
+      // if threshold has been reached, reset votes and skip
+      if ((votes.upvotes - votes.downvotes) <= threshold) {
+
+        // if video in queue, process
+        if (index > -1) {
+          playlist.splice(index, 1);
+          playedVideos.push(currentVideo.video);
+        }
+
+        votes = { upvotes: 0, downvotes: 0 };
+        io.sockets.emit('playNextVideo', currentVideo.video);
+      }
     });
 
     /**

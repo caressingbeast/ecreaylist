@@ -387,7 +387,7 @@ label {
 
 .playlist-current .voting .upvote:hover,
 .playlist-current .voting .upvote.active  {
-  color: green
+  color: #43bb6e;
 }
 
 .playlist-current .voting .downvote:hover,

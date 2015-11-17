@@ -85,9 +85,9 @@
         <div class="playlist-outer">
           <div class="playlist-current table" ng-if="main.current.video">
             <div class="table-cell">{{ main.current.video.snippet.title }}</div>
-            <div class="voting table-cell text-right">
-              <a class="upvote" ng-click="main.upvote(video)"><i class="fa fa-arrow-circle-up"></i></a>
-              <a class="downvote" ng-click="main.downvote(video)"><i class="fa fa-arrow-circle-down"></i></a>
+            <div class="voting table-cell text-right" ng-if="main.showVotingButtons">
+              <a class="upvote" ng-click="main.upvote()"><i class="fa fa-arrow-circle-up"></i></a>
+              <a class="downvote" ng-click="main.downvote()"><i class="fa fa-arrow-circle-down"></i></a>
             </div>
           </div>
           <div class="playlist-inner">

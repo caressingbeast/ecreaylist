@@ -17,12 +17,27 @@
     c.results = [];
     c.showSearchResults = false;
     c.showUserOverlay = false;
+    c.showVotingButtons = false;
     c.theme = null;
     c.toggleQueue = true;
     c.username = '';
     c.users = [];
 
     var addedVideos = []; // tracks videos that user has added
+    var downvotes = 0;
+    var upvotes = 0;
+
+    /**
+     * Run before createNotification()
+     * in order to be able to use WebNotifications
+     */
+    function requestNotificationPermission() {
+
+      // essentially checks for IE/Edge
+      if (window.hasOwnProperty('Notification')) {
+        Notification.requestPermission();
+      }
+    }
 
     /**
     * Gets the youtube object from VideoService
@@ -34,24 +49,29 @@
     init();
 
     /**
-    * Returns the array index of a submitted username in c.users
-    * @param user {String} username to check for
-    * @returns {Integer} index of submitted username
+    * Removes active class from voting buttons
     */
-    function getUserIndex (user) {
-      return c.users.indexOf(user);
+    function clearVotingButtons () {
+      $('.playlist-current .voting a').removeClass('active');
     }
 
     /**
-    * Returns the array index of a submitted video in c.playlist
-    * @param video {Object} video to check for
-    * @param arr {Array} array to check in (defaults to c.playlist if undefined)
-    * @returns {Integer} index of submitted video
-    */
-    function getVideoIndex (video, arr) {
-      var arrayToCheck = arr || c.playlist;
+     * Creates a browser notification alert
+     * @param title {String} heading of notification
+     * @param body {String} content of notification
+     */
+    function createNotification(title, body) {
 
-      return arrayToCheck.map(function (e) { return e.id.videoId; }).indexOf(video.id.videoId);
+      // unnecessary evil
+      if (window.hasOwnProperty('Notification')) {
+        var notification = new Notification(title, {
+          body: body,
+          icon: 'tbd.gif' // TODO: add logo or avatar path here
+        });
+
+        // show notification for a max of 3s
+        setTimeout(notification.close.bind(notification), 3000);
+      }
     }
 
     /**
@@ -78,6 +98,7 @@
 
         // make sure there is a next video
         if (c.playlist.length > 1) {
+          console.log('Hit');
           socket.emit('videoEnded', { video: c.current.video, skipped: true });
         }
 
@@ -91,6 +112,27 @@
       }
 
       socket.emit('messageSent', { username: c.username, message: c.message });
+    }
+
+    /**
+    * Returns the array index of a submitted username in c.users
+    * @param user {String} username to check for
+    * @returns {Integer} index of submitted username
+    */
+    function getUserIndex (user) {
+      return c.users.indexOf(user);
+    }
+
+    /**
+    * Returns the array index of a submitted video in c.playlist
+    * @param video {Object} video to check for
+    * @param arr {Array} array to check in (defaults to c.playlist if undefined)
+    * @returns {Integer} index of submitted video
+    */
+    function getVideoIndex (video, arr) {
+      var arrayToCheck = arr || c.playlist;
+
+      return arrayToCheck.map(function (e) { return e.id.videoId; }).indexOf(video.id.videoId);
     }
 
     /**
@@ -119,37 +161,6 @@
           setElementSize($('.search-results-inner'), offset);
         }
       }, 0, false); // surround in a $timeout just to make sure DOM ready
-    }
-
-    /**
-     * Run before createNotification()
-     * in order to be able to use WebNotifications
-     */
-    function requestNotificationPermission() {
-
-      // essentially checks for IE/Edge
-      if (window.hasOwnProperty('Notification')) {
-        Notification.requestPermission();
-      }
-    }
-
-    /**
-     * Creates a browser notification alert
-     * @param title {String} heading of notification
-     * @param body {String} content of notification
-     */
-    function createNotification(title, body) {
-
-      // unnecessary evil
-      if (window.hasOwnProperty('Notification')) {
-        var notification = new Notification(title, {
-          body: body,
-          icon: 'tbd.gif' // TODO: add logo or avatar path here
-        });
-
-        // show notification for a max of 3s
-        setTimeout(notification.close.bind(notification), 3000);
-      }
     }
 
     /**
@@ -338,6 +349,7 @@
       }
 
       // resize columns
+      checkToShowVotingButtons();
       resizeColumns();
     });
 
@@ -357,6 +369,8 @@
       var index = getVideoIndex(video);
 
       c.playlist.splice(index, 1);
+
+      checkToShowVotingButtons();
     });
 
     /**
@@ -378,6 +392,34 @@
       c.users.splice(index, 1);
       resizeColumns();
     });
+
+    /**
+    * Upvotes the currently playing video
+    */
+    c.upvote = function () {
+      clearVotingButtons();
+      $('.playlist-current .upvote').addClass('active');
+
+      if (upvotes === 0) {
+        downvotes = 0;
+        upvotes++;
+        socket.emit('upvote');
+      }
+    };
+
+    /**
+    * Downvotes the currently playing video
+    */
+    c.downvote = function () {
+      clearVotingButtons();
+      $('.playlist-current .downvote').addClass('active');
+
+      if (downvotes === 0) {
+        upvotes = 0;
+        downvotes++;
+        socket.emit('downvote');
+      }
+    };
 
     /**
     * Plays the next video in the queue
@@ -440,6 +482,8 @@
     * Loads current video (c.current)
     */
     c.load = function () {
+      checkToShowVotingButtons();
+      clearVotingButtons();
       VideoService.launchPlayer(c.current);
     };
 
