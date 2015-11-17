@@ -330,7 +330,17 @@ label {
 }
 
 .message .content {
+  overflow: hidden;
   width: 78%;
+}
+
+.message .content div {
+  padding: 0;
+}
+
+.message .timestamp {
+  width: 75px;
+  color: #ccc;
 }
 
 .messages-outer form {

@@ -68,8 +68,13 @@
               Be the first to say something!
             </div>
             <div class="message" ng-repeat="message in main.messages" ng-class="{ 'active': main.username === message.username }">
-              <div class="username float-left text-right">{{ message.username }}</div>
-              <div class="content float-right">{{ message.message }}</div>
+              <div class="username float-left text-right">
+                {{ message.username }}
+              </div>
+              <div class="content float-right table">
+                <div class="table-cell cell-top">{{ message.message }}</div>
+                <div class="timestamp table-cell cell-top text-right">{{ message.timestamp | date: 'h:mm a' }}</div>
+              </div>
             </div>
           </div>
           <form ng-submit="main.send()">
