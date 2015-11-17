@@ -129,7 +129,21 @@
 
       // essentially checks for IE/Edge
       if (window.hasOwnProperty('Notification')) {
-        Notification.requestPermission();
+        Notification.requestPermission(function (permission) {
+          // there is no point in displaying the icon if Web Notifications are not even supported
+          var $notificationIcon = $('#notificationIcon');
+
+          // Set separate flag since the browser cannot reprompt
+          // or force the user for notifications once set.
+          // Separate flag is for easier toggling on the user.
+          if (permission === 'granted') {
+            localStorage.setItem('sfm-notifications', true);
+            $notificationIcon.addClass('fa-bell');
+          } else if (permission === 'denied') {
+            localStorage.setItem('sfm-notifications', false);
+            $notificationIcon.addClass('fa-bell-o');
+          }
+        });
       }
     }
 
@@ -289,7 +303,10 @@
 
       // don't notify originator of new message
       if (c.username !== message.username) {
-        createNotification(message.username, message.message);
+        // check if user's setting still allows for Web Notifications
+        if (localStorage.getItem('sfm-notifications') === 'true') {
+          createNotification(message.username, message.message);
+        }
       }
 
       // scroll to bottom of message list
@@ -455,6 +472,33 @@
     */
     c.showQueue = function () {
       c.toggleQueue = true;
+    };
+
+    /**
+     * Allows user to enable or disable Web Notifications
+     */
+    c.toggleNotifications = function () {
+      try {
+        var notificationsSetting = localStorage.getItem('sfm-notifications');
+        var $notificationIcon = $('#notificationIcon');
+
+        notificationsSetting = notificationsSetting === 'true'; // convert to Boolean
+        notificationsSetting = !notificationsSetting; // invert
+        localStorage.setItem('sfm-notifications', notificationsSetting); // invert
+
+        // reset icon
+        $notificationIcon.removeClass('fa-bell fa-bell-o');
+
+        if (notificationsSetting === true) {
+          // set icon to 'on'
+          $notificationIcon.addClass('fa-bell');
+        } else {
+          // set icon to 'off'
+          $notificationIcon.addClass('fa-bell-o');
+        }
+      } catch (e) {
+        console.warn('Nice try, make sfm-notifications a Boolean again.')
+      }
     };
 
     // if the user has not registered, make them!
