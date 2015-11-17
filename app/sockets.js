@@ -3,6 +3,7 @@
 module.exports = function (io) {
   var currentTheme = null; // keeps track of room theme
   var currentVideo = { video: null, startSeconds: 0 }; // keeps track of currently playing video
+  var karma = {}; // keeps track of user upvotes/downvotes
   var messages = []; // keeps track of chat messages
   var playedVideos = []; // keeps track of video history
   var playlist = []; // keeps track of video queue
@@ -16,6 +17,7 @@ module.exports = function (io) {
   function clearExistingData () {
     currentTheme = null;
     currentVideo = { video: null, startSeconds: 0 };
+    karma = {};
     messages = [];
     playedVideos = [];
     playlist = [];
@@ -209,29 +211,47 @@ module.exports = function (io) {
     * Currently playing video has been upvoted
     */
     socket.on('upvote', function () {
+      var currentUser = currentVideo.video.username;
+
+      // update karma
+      if (!karma[currentUser]) {
+        karma[currentUser] = 0;
+      }
+
+      karma[currentVideo.video.username]++;
       votes.upvotes++;
     });
 
     /**
     * Currently playing video has been downvoted
     */
-    socket.on('downvote', function () {
-      var index = getVideoIndex(currentVideo.video);
+    socket.on('downvote', function (video) {
+      var currentUser = video.username;
+      var index = getVideoIndex(video);
       var threshold = 0 - Math.round(userArray.length / 2);
 
+      // update karma
+      if (!karma[currentUser]) {
+        karma[currentUser] = 0;
+      }
+
+      karma[currentVideo.video.username]--;
       votes.downvotes++;
 
-      // if threshold has been reached, reset votes and skip
+      // if threshold has been reached, skip video
       if ((votes.upvotes - votes.downvotes) <= threshold) {
 
         // if video in queue, process
         if (index > -1) {
-          playlist.splice(index, 1);
-          playedVideos.push(currentVideo.video);
-        }
 
-        votes = { upvotes: 0, downvotes: 0 };
-        io.sockets.emit('playNextVideo', currentVideo.video);
+          // update stored data
+          playlist.splice(index, 1);
+          playedVideos.push(video);
+          votes = { upvotes: 0, downvotes: 0 };
+
+          // play next video
+          io.sockets.emit('playNextVideo', video);
+        }
       }
     });
 
@@ -244,14 +264,17 @@ module.exports = function (io) {
 
       // if video in queue, process
       if (index > -1) {
+
+        // update stored data
         playlist.splice(index, 1);
         playedVideos.push(data.video);
-      }
 
-      if (data.skipped) { // broadcast to everyone!!!
-        io.sockets.emit('playNextVideo', data.video);
-      } else {
-        socket.emit('playNextVideo', data.video);
+        // play next video
+        if (data.skipped) {
+          io.sockets.emit('playNextVideo', data.video);
+        } else {
+          socket.emit('playNextVideo', data.video);
+        }
       }
     });
 

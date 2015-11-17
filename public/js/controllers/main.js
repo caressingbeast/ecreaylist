@@ -11,6 +11,7 @@
 
     c.messages = [];
     c.playedVideos = [];
+    c.playerIsMuted = false;
     c.playlist = [];
     c.query = '';
     c.lastQuery = '';
@@ -21,9 +22,7 @@
     c.toggleQueue = true;
     c.username = '';
     c.users = [];
-
-    var addedVideos = []; // tracks videos that user has added
-    var hasVoted = false;
+    c.userVote = null;
 
     /**
      * Run before createNotification()
@@ -50,7 +49,7 @@
     * Removes active class from voting buttons
     */
     function clearVotingButtons () {
-      $('.playlist-current .voting a').removeClass('active');
+      $('#player-overlay a').removeClass('active');
     }
 
     /**
@@ -205,7 +204,7 @@
 
       c.showUserOverlay = true;
 
-      // if username has been saved to LS, pre-fill
+      // if username has been saved, pre-fill
       if (username) {
         c.username = username;
       }
@@ -252,6 +251,7 @@
     */
     socket.on('updateCurrentVideo', function (data) {
       c.current = data;
+      c.userVote = null;
 
       // account for lag
       c.current.startSeconds = c.current.startSeconds + 3;
@@ -319,8 +319,10 @@
         return;
       }
 
-      // update stored data
-      addedVideos.push(video);
+      // add username
+      video.username = c.username;
+
+      // remove from search results
       c.results.splice(index, 1);
 
       socket.emit('videoAddedToQueue', video);
@@ -331,18 +333,12 @@
     * @param video {Object} video to be added
     */
     socket.on('addVideoToQueue', function (video) {
-      var index = getVideoIndex(video, addedVideos);
-
-      // check if user added it
-      if (index > -1) {
-        video.userCanDelete = true;
-      }
-
       c.playlist.push(video);
 
       // if it's the first video, play!
       if (c.playlist.length === 1) {
         c.current.video = c.playlist[0];
+        c.userVote = null;
         c.load();
       }
 
@@ -388,19 +384,30 @@
       resizeColumns();
     });
 
+    c.toggleMute = function () {
+      if (c.playerIsMuted) {
+        c.playerIsMuted = false;
+        c.youtube.player.unMute();
+        return;
+      }
+
+      c.playerIsMuted = true;
+      c.youtube.player.mute();
+    };
+
     /**
     * Upvotes the currently playing video
     */
     c.upvote = function () {
 
       // if already voted, exit
-      if (hasVoted) {
+      if (c.userVote) {
         return;
       }
 
       clearVotingButtons();
-      $('.playlist-current .upvote').addClass('active');
-      hasVoted = true;
+      $('#player-overlay .upvote').addClass('active');
+      c.userVote = 'upvote';
       socket.emit('upvote');
     };
 
@@ -410,14 +417,14 @@
     c.downvote = function () {
 
       // if already voted, exit
-      if (hasVoted) {
+      if (c.userVote) {
         return;
       }
 
       clearVotingButtons();
-      $('.playlist-current .downvote').addClass('active');
-      hasVoted = true;
-      socket.emit('downvote');
+      $('#player-overlay .downvote').addClass('active');
+      c.userVote = 'downvote';
+      socket.emit('downvote', c.current.video);
     };
 
     /**
@@ -425,10 +432,9 @@
     * @param video {Object} recently ended video
     */
     c.playNextVideo = function (video) {
+      console.log(video);
       var index = getVideoIndex(video);
       var nextVideo = c.playlist[index + 1];
-
-      console.log(video, index);
 
       // update playlists
       c.playedVideos.push(c.playlist[index]);
@@ -436,11 +442,13 @@
 
       // if no videos left in queue, exit
       if (!nextVideo) {
+        c.youtube.player.stop();
         return;
       }
 
       c.current.video = nextVideo;
       c.current.startSeconds = 0;
+      c.userVote = null;
       c.load();
     };
 
@@ -483,15 +491,6 @@
     * Loads current video (c.current)
     */
     c.load = function () {
-      clearVotingButtons();
-
-      // show voting buttons if the video wasn't added by user
-      if (getVideoIndex(c.current.video, addedVideos) === -1) {
-        c.showVotingButtons = true;
-      } else {
-        c.showVotingButtons = false;
-      }
-
       VideoService.launchPlayer(c.current);
     };
 

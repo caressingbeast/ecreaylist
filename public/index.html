@@ -82,13 +82,17 @@
       </div>
       <div class="column float-right video-column">
         <div id="player"></div>
+        <div id="player-overlay" ng-if="main.current.video">
+          <a class="upvote" ng-class="{ 'active': main.userVote === 'upvote' }" ng-click="main.upvote()" ng-if="main.current.video.username !== main.username"><i class="fa fa-arrow-circle-up"></i></a>
+          <a ng-click="main.toggleMute()">
+            <i class="fa fa-volume-off" ng-if="!main.playerIsMuted"></i>
+            <i class="fa fa-volume-up" ng-if="main.playerIsMuted"></i>
+          </a>
+          <a class="downvote" ng-class="{ 'active': main.userVote === 'downvote' }" ng-click="main.downvote()" ng-if="main.current.video.username !== main.username"><i class="fa fa-arrow-circle-down"></i></a>
+        </div>
         <div class="playlist-outer">
           <div class="playlist-current table" ng-if="main.current.video">
             <div class="table-cell">{{ main.current.video.snippet.title }}</div>
-            <div class="voting table-cell text-right" ng-if="main.showVotingButtons">
-              <a class="upvote" ng-click="main.upvote()"><i class="fa fa-arrow-circle-up"></i></a>
-              <a class="downvote" ng-click="main.downvote()"><i class="fa fa-arrow-circle-down"></i></a>
-            </div>
           </div>
           <div class="playlist-inner">
             <div class="playlist-queue" ng-if="main.toggleQueue">
@@ -97,7 +101,7 @@
               </div>
               <div class="playlist-video table" ng-repeat="video in main.playlist" ng-if="main.current.video.id.videoId !== video.id.videoId">
                 <div class="table-cell">{{ video.snippet.title }}</div>
-                <div class="table-cell delete" ng-click="main.delete(video)" ng-if="video.userCanDelete">delete</div>
+                <div class="table-cell delete" ng-click="main.delete(video)" ng-if="main.username === video.username">delete</div>
               </div>
             </div>
             <div class="playlist-history" ng-if="!main.toggleQueue">
