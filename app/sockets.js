@@ -101,13 +101,6 @@ module.exports = function (io) {
   }
 
   /**
-  * Requests connection status from clients
-  */
-  function refreshTimeout () {
-    io.sockets.emit('getStatus');
-  }
-
-  /**
   * Upvotes the vote count
   * @param type {String} type of vote to count (upvote/downvote)
   * @param video {Object} video being voted on
@@ -340,6 +333,4 @@ module.exports = function (io) {
       }
     });
   });
-
-  setInterval(refreshTimeout, 15000);
 };
