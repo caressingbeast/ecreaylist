@@ -9,8 +9,6 @@ module.exports = function (io) {
   var playlist = []; // keeps track of video queue
   var userArray = []; // keeps track of toLowerCase() usernames (for uniqueness checks)
   var userList = []; // keeps track of submitted usernames
-  var videoEndedCount = 0;
-  var videoEndedTimer = null;
   var votes = { upvotes: 0, downvotes: 0 }; // tracks upvotes/downvotes
 
   /**
@@ -25,8 +23,6 @@ module.exports = function (io) {
     playlist = [];
     userArray = [];
     userList = [];
-    videoEndedCount = 0;
-    videoEndedTimer = null;
     votes = { upvotes: 0, downvotes: 0 };
   }
 
@@ -54,12 +50,10 @@ module.exports = function (io) {
   }
 
   /**
-  * Plays the next video in the queue (downvoted, ended, or skipped)
+  * Moves a video from  queue to history
   * @param video {Object} currently playing video
-  * @param socket {Object} socket connection
-  * @param broadcast {Boolean} local emit or network-wide (defaults to local if undefined)
   */
-  function playNextVideo (video, socket, broadcast) {
+  function shiftVideo (video) {
     var index = getVideoIndex(video);
 
     // if video in queue, process
@@ -67,35 +61,6 @@ module.exports = function (io) {
       playlist.splice(index, 1);
       playedVideos.push(video);
     }
-
-    // play next video
-    if (broadcast) {
-      io.sockets.emit('playNextVideo', video);
-      return;
-    }
-
-    socket.emit('playNextVideo', video);
-  }
-
-  /**
-  * Makes sure all users have finished video before moving on to the next
-  * @param video {Object} currently playing video
-  * @param socket {Object} socket connection
-  */
-  function checkVideoEndedCount (video, socket) {
-
-    // if not everyone has finished, wait around
-    if (userArray.length !== videoEndedCount) {
-      videoEndedTimer = setInterval(function () {
-        checkVideoEndedCount(video, socket);
-      }, 1500);
-      return;
-    }
-
-    // move on to the next video
-    clearInterval(videoEndedTimer);
-    playNextVideo(video, socket, true);
-    videoEndedCount = 0;
   }
 
   /**
@@ -138,13 +103,6 @@ module.exports = function (io) {
       socket.emit('roomFull');
       return;
     }
-
-    /**
-    * Refreshes socket connection (avoids timeout)
-    */
-    socket.on('statusSent', function () {
-      // do nothing
-    });
 
     // send current data to new connection
     socket.emit('populateInitialData', { messages: messages,
@@ -286,7 +244,8 @@ module.exports = function (io) {
 
       // if threshold has been reached, skip video
       if ((votes.upvotes - votes.downvotes) <= threshold) {
-        playNextVideo(video, socket, true);
+        shiftVideo(video);
+        io.sockets.emit('playNextVideo', video);
       }
     });
 
@@ -295,7 +254,8 @@ module.exports = function (io) {
     * @param video {Object} video that ended
     */
     socket.on('videoEnded', function (video) {
-      playNextVideo(video, socket);
+      shiftVideo(video);
+      socket.emit('playNextVideo', video);
     });
 
     /**
@@ -303,7 +263,8 @@ module.exports = function (io) {
     * @param video {Object} video to be skipped
     */
     socket.on('videoSkipped', function (video) {
-      playNextVideo(video, socket, true);
+      shiftVideo(video);
+      io.sockets.emit('playNextVideo', video);
     });
 
     /**
