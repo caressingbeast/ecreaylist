@@ -196,7 +196,7 @@ module.exports = function (io) {
 
     /**
     * Currently playing video has ended
-    * @param video {Object} recently ended video
+    * @param data {Object} { video: ended/skipped video, skipped: true (optional) }
     */
     socket.on('videoEnded', function (data) {
       var index = getVideoIndex(data.video);
