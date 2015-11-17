@@ -69,7 +69,10 @@
             </div>
             <div class="message" ng-repeat="message in main.messages" ng-class="{ 'active': main.username === message.username }">
               <div class="username float-left text-right">{{ message.username }}</div>
-              <div class="content float-right">{{ message.message }}</div>
+              <div class="content float-right table">
+                <div class="table-cell cell-top">{{ message.message }}</div>
+                <div class="timestamp table-cell cell-top text-right">{{ message.timestamp | date: 'h:mm a' }}</div>
+              </div>
             </div>
           </div>
           <form ng-submit="main.send()">
@@ -94,7 +97,7 @@
               </div>
               <div class="playlist-video table" ng-repeat="video in main.playlist" ng-if="main.current.video.id.videoId !== video.id.videoId">
                 <div class="table-cell">{{ video.snippet.title }}</div>
-                <div class="table-cell delete" ng-click="main.delete(video)">delete</div>
+                <div class="table-cell delete" ng-click="main.delete(video)" ng-if="video.userCanDelete">delete</div>
               </div>
             </div>
             <div class="playlist-history" ng-if="!main.toggleQueue">
@@ -107,8 +110,8 @@
             </div>
           </div>
           <div class="playlist-actions table">
-            <div class="table-cell" ng-click="main.showQueue()" ng-class="{ 'active': main.toggleQueue }">Queue</div>
-            <div class="table-cell" ng-click="main.showHistory()" ng-class="{ 'active': !main.toggleQueue }">History</div>
+            <div class="table-cell" ng-click="main.showQueue()" ng-class="{ 'active': main.toggleQueue }">Queue ({{ main.playlist.length }})</div>
+            <div class="table-cell" ng-click="main.showHistory()" ng-class="{ 'active': !main.toggleQueue }">History ({{ main.playedVideos.length }})</div>
           </div>
         </div>
       </div>

@@ -24,7 +24,7 @@
 
         videoTimer = setInterval(function () {
           socket.emit('currentVideoUpdated', { video: youtube.video, startSeconds: youtube.player.getCurrentTime() });
-        }, 500);
+        }, 1000);
       }
 
       if (event.data === YT.PlayerState.PAUSED) {
@@ -34,7 +34,7 @@
 
       if (event.data === YT.PlayerState.ENDED) {
         clearInterval(videoTimer);
-        socket.emit('videoEnded', youtube.video);
+        socket.emit('videoEnded', { video: youtube.video });
       }
     }
 
@@ -42,6 +42,7 @@
       return new YT.Player('player', {
         width: '100%',
         playerVars: {
+          controls: 0,
           rel: 0,
           showInfo: 0
         },
