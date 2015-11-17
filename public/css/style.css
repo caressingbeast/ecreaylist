@@ -357,9 +357,42 @@ label {
   margin: 0;
 }
 
-#player {
+#player,
+#player-overlay {
   position: absolute; right: 0;
   width: 50%; height: 360px;
+}
+
+#player-overlay {
+  padding: 155px 0 0 0;
+  z-index: 100;
+  font-size: 50px;
+  line-height: 1;
+  text-align: center;
+}
+
+#player-overlay a {
+  display: none;
+  margin: 0 10px;
+  color: #fff;
+}
+
+#player-overlay .upvote:hover,
+#player-overlay .upvote.active {
+  color: #19b219;
+}
+
+#player-overlay .downvote:hover,
+#player-overlay .downvote.active {
+  color: #df1f1f;
+}
+
+#player-overlay:hover {
+  background: rgba(0, 0, 0, 0.75);
+}
+
+#player-overlay:hover a {
+  display: inline-block;
 }
 
 .playlist-outer {

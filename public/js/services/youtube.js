@@ -34,7 +34,7 @@
 
       if (event.data === YT.PlayerState.ENDED) {
         clearInterval(videoTimer);
-        socket.emit('videoEnded', { video: youtube.video });
+        socket.emit('videoEnded', youtube.video);
       }
     }
 

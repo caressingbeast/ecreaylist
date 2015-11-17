@@ -3,11 +3,13 @@
 module.exports = function (io) {
   var currentTheme = null; // keeps track of room theme
   var currentVideo = { video: null, startSeconds: 0 }; // keeps track of currently playing video
+  var karma = {}; // keeps track of user upvotes/downvotes
   var messages = []; // keeps track of chat messages
   var playedVideos = []; // keeps track of video history
   var playlist = []; // keeps track of video queue
   var userArray = []; // keeps track of toLowerCase() usernames (for uniqueness checks)
   var userList = []; // keeps track of submitted usernames
+  var votes = { upvotes: 0, downvotes: 0 }; // tracks upvotes/downvotes
 
   /**
   * Clears existing data
@@ -15,11 +17,13 @@ module.exports = function (io) {
   function clearExistingData () {
     currentTheme = null;
     currentVideo = { video: null, startSeconds: 0 };
+    karma = {};
     messages = [];
     playedVideos = [];
     playlist = [];
     userArray = [];
     userList = [];
+    votes = { upvotes: 0, downvotes: 0 };
   }
 
   /**
@@ -46,10 +50,63 @@ module.exports = function (io) {
   }
 
   /**
+  * Plays the next video in the queue (downvoted, ended, or skipped)
+  * @param video {Object} currently playing video
+  * @param socket {Object} socket connection
+  * @param broadcast {Boolean} local emit or network-wide (defaults to local if undefined)
+  */
+  function playNextVideo (video, socket, broadcast) {
+    var index = getVideoIndex(video);
+
+    // if video in queue, process
+    if (index > -1) {
+
+      // update stored data
+      playlist.splice(index, 1);
+      playedVideos.push(video);
+
+      // play next video
+      if (broadcast) {
+        io.sockets.emit('playNextVideo', video);
+        return;
+      }
+
+      socket.emit('playNextVideo', video);
+    }
+  }
+
+  /**
   * Requests connection status from clients
   */
   function refreshTimeout () {
     io.sockets.emit('getStatus');
+  }
+
+  /**
+  * Upvotes the vote count
+  * @param type {String} type of vote to count (upvote/downvote)
+  * @param video {Object} video being voted on
+  */
+  function updateVotes (type, video) {
+
+    // if no type or video, exit
+    if (!type || !video) {
+      return;
+    }
+
+    // if no karma yet, init
+    if (!karma[video.username]) {
+      karma[video.username] = 0;
+    }
+
+    // update votes
+    if (type === 'upvote') {
+      karma[video.username]++;
+      votes.upvotes++;
+    } else {
+      karma[video.username]--;
+      votes.downvotes++;
+    }
   }
 
   io.sockets.on('connection', function (socket) {
@@ -149,18 +206,10 @@ module.exports = function (io) {
 
     /**
     * Currently playing video has been updated (new video or elapsed seconds)
-    * @param video {Object} updated video
+    * @param data {Object} video data and elapsed time
     */
-    socket.on('currentVideoUpdated', function (video) {
-      var range = 15; // playback range
-
-      // update video if the startSeconds are within range, otherwise reset
-      if (video.startSeconds <= (currentVideo.startSeconds + range) &&
-          video.startSeconds >= (currentVideo.startSeconds - range)) {
-        currentVideo = video;
-      } else {
-        socket.emit('updateCurrentVideo', currentVideo);
-      }
+    socket.on('currentVideoUpdated', function (data) {
+      currentVideo = data;
     });
 
     /**
@@ -204,23 +253,41 @@ module.exports = function (io) {
     });
 
     /**
-    * Currently playing video has ended
-    * @param data {Object} { video: ended/skipped video, skipped: true (optional) }
+    * Currently playing video has been upvoted
     */
-    socket.on('videoEnded', function (data) {
-      var index = getVideoIndex(data.video);
+    socket.on('upvote', function (video) {
+      updateVotes('upvote', video);
+    });
 
-      // if video in queue, process
-      if (index > -1) {
-        playlist.splice(index, 1);
-        playedVideos.push(data.video);
-      }
+    /**
+    * Currently playing video has been downvoted
+    * @param video {Object} video that was downvoted
+    */
+    socket.on('downvote', function (video) {
+      var threshold = 0 - Math.round(userArray.length / 2);
 
-      if (data.skipped) { // broadcast to everyone!!!
-        io.sockets.emit('playNextVideo', data.video);
-      } else {
-        socket.emit('playNextVideo', data.video);
+      updateVotes('downvote', video);
+
+      // if threshold has been reached, skip video
+      if ((votes.upvotes - votes.downvotes) <= threshold) {
+        playNextVideo(video, socket, true);
       }
+    });
+
+    /**
+    * Currently playing video has ended
+    * @param video {Object} video that ended
+    */
+    socket.on('videoEnded', function (video) {
+      playNextVideo(video, socket);
+    });
+
+    /**
+    * Currently playing video has been skipped
+    * @param video {Object} video to be skipped
+    */
+    socket.on('videoSkipped', function (video) {
+      playNextVideo(video, socket, true);
     });
 
     /**

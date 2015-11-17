@@ -82,9 +82,17 @@
       </div>
       <div class="column float-right video-column">
         <div id="player"></div>
+        <div id="player-overlay" ng-if="main.current.video">
+          <a class="upvote" ng-class="{ 'active': main.userVote === 'upvote' }" ng-click="main.upvote()" ng-if="main.current.video.username !== main.username"><i class="fa fa-arrow-circle-up"></i></a>
+          <a ng-click="main.toggleMute()">
+            <i class="fa fa-volume-off" ng-if="!main.playerIsMuted"></i>
+            <i class="fa fa-volume-up" ng-if="main.playerIsMuted"></i>
+          </a>
+          <a class="downvote" ng-class="{ 'active': main.userVote === 'downvote' }" ng-click="main.downvote()" ng-if="main.current.video.username !== main.username"><i class="fa fa-arrow-circle-down"></i></a>
+        </div>
         <div class="playlist-outer">
-          <div class="playlist-current" ng-if="main.current.video">
-            {{ main.current.video.snippet.title }}
+          <div class="playlist-current table" ng-if="main.current.video">
+            <div class="table-cell">{{ main.current.video.snippet.title }}</div>
           </div>
           <div class="playlist-inner">
             <div class="playlist-queue" ng-if="main.toggleQueue">

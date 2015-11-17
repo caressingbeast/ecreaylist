@@ -11,6 +11,7 @@
 
     c.messages = [];
     c.playedVideos = [];
+    c.playerIsMuted = false;
     c.playlist = [];
     c.query = '';
     c.lastQuery = '';
@@ -21,6 +22,19 @@
     c.toggleQueue = true;
     c.username = '';
     c.users = [];
+    c.userVote = null;
+
+    /**
+     * Run before createNotification()
+     * in order to be able to use WebNotifications
+     */
+    function requestNotificationPermission() {
+
+      // essentially checks for IE/Edge
+      if (window.hasOwnProperty('Notification')) {
+        Notification.requestPermission();
+      }
+    }
 
     /**
     * Gets the youtube object from VideoService
@@ -32,24 +46,22 @@
     init();
 
     /**
-    * Returns the array index of a submitted username in c.users
-    * @param user {String} username to check for
-    * @returns {Integer} index of submitted username
-    */
-    function getUserIndex (user) {
-      return c.users.indexOf(user);
-    }
+     * Creates a browser notification alert
+     * @param title {String} heading of notification
+     * @param body {String} content of notification
+     */
+    function createNotification(title, body) {
 
-    /**
-    * Returns the array index of a submitted video in c.playlist
-    * @param video {Object} video to check for
-    * @param arr {Array} array to check in (defaults to c.playlist if undefined)
-    * @returns {Integer} index of submitted video
-    */
-    function getVideoIndex (video, arr) {
-      var arrayToCheck = arr || c.playlist;
+      // unnecessary evil
+      if (window.hasOwnProperty('Notification')) {
+        var notification = new Notification(title, {
+          body: body,
+          icon: 'tbd.gif' // TODO: add logo or avatar path here
+        });
 
-      return arrayToCheck.map(function (e) { return e.id.videoId; }).indexOf(video.id.videoId);
+        // show notification for a max of 3s
+        setTimeout(notification.close.bind(notification), 3000);
+      }
     }
 
     /**
@@ -76,7 +88,7 @@
 
         // make sure there is a next video
         if (c.playlist.length > 1) {
-          socket.emit('videoEnded', { video: c.current.video, skipped: true });
+          socket.emit('videoSkipped', c.current.video);
         }
 
         return;
@@ -89,6 +101,27 @@
       }
 
       socket.emit('messageSent', { username: c.username, message: c.message });
+    }
+
+    /**
+    * Returns the array index of a submitted username in c.users
+    * @param user {String} username to check for
+    * @returns {Integer} index of submitted username
+    */
+    function getUserIndex (user) {
+      return c.users.indexOf(user);
+    }
+
+    /**
+    * Returns the array index of a submitted video in c.playlist
+    * @param video {Object} video to check for
+    * @param arr {Array} array to check in (defaults to c.playlist if undefined)
+    * @returns {Integer} index of submitted video
+    */
+    function getVideoIndex (video, arr) {
+      var arrayToCheck = arr || c.playlist;
+
+      return arrayToCheck.map(function (e) { return e.id.videoId; }).indexOf(video.id.videoId);
     }
 
     /**
@@ -117,37 +150,6 @@
           setElementSize($('.search-results-inner'), offset);
         }
       }, 0, false); // surround in a $timeout just to make sure DOM ready
-    }
-
-    /**
-     * Run before createNotification()
-     * in order to be able to use WebNotifications
-     */
-    function requestNotificationPermission() {
-
-      // essentially checks for IE/Edge
-      if (window.hasOwnProperty('Notification')) {
-        Notification.requestPermission();
-      }
-    }
-
-    /**
-     * Creates a browser notification alert
-     * @param title {String} heading of notification
-     * @param body {String} content of notification
-     */
-    function createNotification(title, body) {
-
-      // unnecessary evil
-      if (window.hasOwnProperty('Notification')) {
-        var notification = new Notification(title, {
-          body: body,
-          icon: 'tbd.gif' // TODO: add logo or avatar path here
-        });
-
-        // show notification for a max of 3s
-        setTimeout(notification.close.bind(notification), 3000);
-      }
     }
 
     /**
@@ -194,7 +196,7 @@
 
       c.showUserOverlay = true;
 
-      // if username has been saved to LS, pre-fill
+      // if username has been saved, pre-fill
       if (username) {
         c.username = username;
       }
@@ -241,6 +243,7 @@
     */
     socket.on('updateCurrentVideo', function (data) {
       c.current = data;
+      c.userVote = null;
 
       // account for lag
       c.current.startSeconds = c.current.startSeconds + 3;
@@ -327,6 +330,7 @@
       // if it's the first video, play!
       if (c.playlist.length === 1) {
         c.current.video = c.playlist[0];
+        c.userVote = null;
         c.load();
       }
 
@@ -372,6 +376,45 @@
       resizeColumns();
     });
 
+    c.toggleMute = function () {
+      if (c.playerIsMuted) {
+        c.playerIsMuted = false;
+        c.youtube.player.unMute();
+        return;
+      }
+
+      c.playerIsMuted = true;
+      c.youtube.player.mute();
+    };
+
+    /**
+    * Upvotes the currently playing video
+    */
+    c.upvote = function () {
+
+      // if already voted, exit
+      if (c.userVote) {
+        return;
+      }
+
+      c.userVote = 'upvote';
+      socket.emit('upvote', c.current.video);
+    };
+
+    /**
+    * Downvotes the currently playing video
+    */
+    c.downvote = function () {
+
+      // if already voted, exit
+      if (c.userVote) {
+        return;
+      }
+
+      c.userVote = 'downvote';
+      socket.emit('downvote', c.current.video);
+    };
+
     /**
     * Plays the next video in the queue
     * @param video {Object} recently ended video
@@ -380,17 +423,18 @@
       var index = getVideoIndex(video);
       var nextVideo = c.playlist[index + 1];
 
-      // update playlists
-      c.playedVideos.push(c.playlist[index]);
-      c.playlist.splice(index, 1);
-
       // if no videos left in queue, exit
       if (!nextVideo) {
         return;
       }
 
+      // update playlists
+      c.playedVideos.push(video);
+      c.playlist.splice(index, 1);
+
       c.current.video = nextVideo;
       c.current.startSeconds = 0;
+      c.userVote = null;
       c.load();
     };
 
