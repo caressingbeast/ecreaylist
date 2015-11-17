@@ -25,12 +25,12 @@ module.exports = function (io) {
   /**
   * Returns the array index of a submitted username in userArray/userList
   * @param name {String} username to check for
-  * @param toggle {Boolean} indicates which array to search in
+  * @param arr {Array} array to search in (defaults to userArray if undefined)
   * @returns {Integer} index of submitted username
   */
-  function getUsernameIndex (name, list) {
-    if (list) {
-      return userList.indexOf(name);
+  function getUsernameIndex (name, arr) {
+    if (arr) {
+      return arr.indexOf(name);
     }
 
     return userArray.indexOf(name.toLowerCase());
@@ -222,7 +222,7 @@ module.exports = function (io) {
 
       // update stored data
       userArray.splice(getUsernameIndex(username), 1);
-      userList.splice(getUsernameIndex(username, true), 1);
+      userList.splice(getUsernameIndex(username, userList), 1);
 
       // send out new data
       io.sockets.emit('removeUser', username);
