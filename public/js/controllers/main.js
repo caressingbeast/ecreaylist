@@ -131,7 +131,7 @@
       if (window.hasOwnProperty('Notification')) {
         Notification.requestPermission(function (permission) {
           // there is no point in displaying the icon if Web Notifications are not even supported
-          var $notificationIcon = $('#notificationIcon');
+          var $notificationIcon = $('#notification-icon');
 
           // Set separate flag since the browser cannot reprompt
           // or force the user for notifications once set.
@@ -480,7 +480,7 @@
     c.toggleNotifications = function () {
       try {
         var notificationsSetting = sessionStorage.getItem('sfm-notifications');
-        var $notificationIcon = $('#notificationIcon');
+        var $notificationIcon = $('#notification-icon');
 
         notificationsSetting = notificationsSetting === 'true'; // convert to Boolean
         notificationsSetting = !notificationsSetting; // invert
