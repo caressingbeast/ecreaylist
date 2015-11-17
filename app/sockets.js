@@ -94,7 +94,7 @@ module.exports = function (io) {
 
     // move on to the next video
     clearInterval(videoEndedTimer);
-    playNextVideo(video, socket);
+    playNextVideo(video, socket, true);
     videoEndedCount = 0;
   }
 
