@@ -64,19 +64,17 @@ module.exports = function (io) {
 
     // if video in queue, process
     if (index > -1) {
-
-      // update stored data
       playlist.splice(index, 1);
       playedVideos.push(video);
-
-      // play next video
-      if (broadcast) {
-        io.sockets.emit('playNextVideo', video);
-        return;
-      }
-
-      socket.emit('playNextVideo', video);
     }
+
+    // play next video
+    if (broadcast) {
+      io.sockets.emit('playNextVideo', video);
+      return;
+    }
+
+    socket.emit('playNextVideo', video);
   }
 
   /**
@@ -89,15 +87,15 @@ module.exports = function (io) {
     // if not everyone has finished, wait around
     if (userArray.length !== videoEndedCount) {
       videoEndedTimer = setInterval(function () {
-        checkVideoEndedCount();
-      }, 1000);
+        checkVideoEndedCount(video, socket);
+      }, 1500);
       return;
     }
 
     // move on to the next video
-    playNextVideo(currentVideo.video, socket, true);
-    videoEndedCount = 0;
     clearInterval(videoEndedTimer);
+    playNextVideo(video, socket);
+    videoEndedCount = 0;
   }
 
   /**
@@ -297,7 +295,8 @@ module.exports = function (io) {
     * @param video {Object} video that ended
     */
     socket.on('videoEnded', function (video) {
-      playNextVideo(video, socket);
+      videoEndedCount++;
+      checkVideoEndedCount(video, socket);
     });
 
     /**
