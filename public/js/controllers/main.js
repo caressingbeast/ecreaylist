@@ -161,13 +161,6 @@
     });
 
     /**
-    * Shows registration overlay
-    */
-    c.createUser = function () {
-      c.showUserOverlay = true;
-    };
-
-    /**
     * Submits username to server
     */
     c.saveUser = function () {
@@ -182,6 +175,25 @@
     };
 
     /**
+    * Shows registration overlay
+    */
+    c.createUser = function () {
+      var username = localStorage.getItem('sfm-username');
+
+      c.showUserOverlay = true;
+
+      // if username has been saved to LS, pre-fill
+      if (username) {
+        c.username = username;
+      }
+
+      // focus input field
+      $timeout(function () {
+        $('.overlay-inner input').focus();
+      }, 0, false);
+    };
+
+    /**
     * Username is taken
     */
     socket.on('usernameError', function () {
@@ -193,6 +205,7 @@
     */
     socket.on('usernameSuccess', function () {
       c.showUserOverlay = false;
+      localStorage.setItem('sfm-username', c.username);
       socket.emit('getCurrentVideo');
     });
 
