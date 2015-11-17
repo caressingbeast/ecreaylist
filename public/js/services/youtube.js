@@ -24,7 +24,7 @@
 
         videoTimer = setInterval(function () {
           socket.emit('currentVideoUpdated', { video: youtube.video, startSeconds: youtube.player.getCurrentTime() });
-        }, 500);
+        }, 1000);
       }
 
       if (event.data === YT.PlayerState.PAUSED) {

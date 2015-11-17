@@ -152,7 +152,15 @@ module.exports = function (io) {
     * @param video {Object} updated video
     */
     socket.on('currentVideoUpdated', function (video) {
-      currentVideo = video;
+      var range = 15; // playback range
+
+      // update video if the startSeconds are within range, otherwise reset
+      if (video.startSeconds <= (currentVideo.startSeconds + range) &&
+          video.startSeconds >= (currentVideo.startSeconds - range)) {
+        currentVideo = video;
+      } else {
+        socket.emit('updateCurrentVideo', currentVideo);
+      }
     });
 
     /**
@@ -178,7 +186,7 @@ module.exports = function (io) {
     * @param data {Object} message to be added
     */
     socket.on('messageSent', function (data) {
-      data.timestamp = new Date(); // add timestamp      
+      data.timestamp = new Date(); // add timestamp
       messages.push(data);
       io.sockets.emit('addMessage', data);
     });
