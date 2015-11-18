@@ -10,6 +10,7 @@ module.exports = function (io, secret) {
   var userArray = []; // keeps track of toLowerCase() usernames (for uniqueness checks)
   var userList = []; // keeps track of submitted usernames
   var userMap = {};
+  var videoEndedCount = 0;
   var votes = { upvotes: 0, downvotes: 0 }; // tracks upvotes/downvotes
 
   /**
@@ -95,6 +96,7 @@ module.exports = function (io, secret) {
   io.sockets.on('connection', function (socket) {
     var isAdmin = false;
     var username;
+    var videoEndedTimer;
 
     // clear stored data for first connection
     if (!userArray.length) {
@@ -198,7 +200,7 @@ module.exports = function (io, secret) {
     * User has kicked out another user
     * @param username {String} username of user getting kicked out
     */
-    socket.on('userKicked', function (username) {
+    socket.on('userKicked', function () {
       // TODO: implement
     });
 
@@ -270,8 +272,15 @@ module.exports = function (io, secret) {
     * @param video {Object} video that ended
     */
     socket.on('videoEnded', function (video) {
-      shiftVideo(video);
-      socket.emit('playNextVideo', video);
+      videoEndedCount++;
+
+      videoEndedTimer = setInterval(function () {
+        if (userArray.length === videoEndedCount) {
+          clearInterval(videoEndedTimer);
+          shiftVideo(video);
+          socket.emit('playNextVideo', video);
+        }
+      }, 1000);
     });
 
     /**
