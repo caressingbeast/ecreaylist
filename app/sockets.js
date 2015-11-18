@@ -1,6 +1,7 @@
 // app/sockets.js
 
-module.exports = function (io) {
+module.exports = function (io, secret) {
+  var admin = false; // keeps track if admin registered
   var currentTheme = null; // keeps track of room theme
   var currentVideo = { video: null, startSeconds: 0 }; // keeps track of currently playing video
   var karma = {}; // keeps track of user upvotes/downvotes
@@ -15,6 +16,7 @@ module.exports = function (io) {
   * Clears existing data
   */
   function clearExistingData () {
+    admin = false;
     currentTheme = null;
     currentVideo = { video: null, startSeconds: 0 };
     karma = {};
@@ -91,7 +93,7 @@ module.exports = function (io) {
   }
 
   io.sockets.on('connection', function (socket) {
-    var isAdmin = socket.request.connection.remoteAddress === '1';
+    var isAdmin = false;
     var username;
 
     // clear stored data for first connection
@@ -106,8 +108,7 @@ module.exports = function (io) {
     }
 
     // send current data to new connection
-    socket.emit('populateInitialData', { admin: { isAdmin: isAdmin, address: socket.request.connection.remoteAddress },
-                                         messages: messages,
+    socket.emit('populateInitialData', { messages: messages,
                                          playedVideos: playedVideos,
                                          playlist: playlist,
                                          theme: currentTheme,
@@ -125,7 +126,6 @@ module.exports = function (io) {
         return;
       }
 
-      // update stored data
       username = name;
       userArray.push(name.toLowerCase());
       userList.push(name);
@@ -140,6 +140,20 @@ module.exports = function (io) {
     */
     socket.on('getCurrentVideo', function () {
       socket.emit('updateCurrentVideo', currentVideo);
+    });
+
+    socket.on('adminRegistered', function (password) {
+
+      // if admin already registered, exit
+      if (admin) {
+        return;
+      }
+
+      if (password === secret.phrase) {
+        admin = true;
+        isAdmin = true;
+        socket.emit('updateIsAdmin');
+      }
     });
 
     /**
