@@ -94,8 +94,6 @@ module.exports = function (io) {
     var isAdmin = socket.request.connection.remoteAddress === '192.168.1.145';
     var username;
 
-    console.log(socket.request.connection.remoteAddress, socket.remoteAddress);
-
     // clear stored data for first connection
     if (!userArray.length) {
       clearExistingData();
@@ -108,7 +106,7 @@ module.exports = function (io) {
     }
 
     // send current data to new connection
-    socket.emit('populateInitialData', { admin: isAdmin,
+    socket.emit('populateInitialData', { admin: { isAdmin: isAdmin, address: socket.request.connection.remoteAddress },
                                          messages: messages,
                                          playedVideos: playedVideos,
                                          playlist: playlist,

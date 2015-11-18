@@ -179,7 +179,8 @@
     * @param data {Object} existing data to cache
     */
     socket.on('populateInitialData', function (data) {
-      if (data.admin) isAdmin = data.admin;
+      console.log(data.admin.address);
+      if (data.admin) isAdmin = data.admin.isAdmin;
       if (data.messages) c.messages = data.messages;
       if (data.playedVideos) c.playedVideos = data.playedVideos;
       if (data.playlist) c.playlist = data.playlist;
