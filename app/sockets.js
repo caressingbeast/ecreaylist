@@ -9,8 +9,8 @@ module.exports = function (io, secret) {
   var playlist = []; // keeps track of video queue
   var userArray = []; // keeps track of toLowerCase() usernames (for uniqueness checks)
   var userList = []; // keeps track of submitted usernames
-  var userMap = {};
-  var videoEndedCount = 0;
+  var userMap = {}; // maps usernames to socket IDs
+  var videoEndedCount = 0; // keeps track of video endings (synced playback);
   var votes = { upvotes: 0, downvotes: 0 }; // tracks upvotes/downvotes
 
   /**
@@ -26,6 +26,7 @@ module.exports = function (io, secret) {
     userArray = [];
     userList = [];
     userMap = {};
+    videoEndedCount = 0;
     votes = { upvotes: 0, downvotes: 0 };
   }
 
