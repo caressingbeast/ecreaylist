@@ -70,12 +70,25 @@
     * Figures out what to do with a new message
     */
     function determineMessageEmit () {
+      var adminCheck = '/admin=';
       var deleteCheck = '/delete=';
       var kickCheck = '/kick=';
       var skipCheck = '/skipcurrent';
       var themeCheck = '/theme=';
 
-      // make sure they're admin
+      // user is registering as an admin
+      if (c.message.indexOf(adminCheck) > -1) {
+        socket.emit('adminStatusRequested', c.message.split(adminCheck)[1]);
+        return;
+      }
+
+      // user is changing theme
+      if (c.message.indexOf(themeCheck) > -1) {
+        socket.emit('themeUpdated', c.message.split(themeCheck)[1]);
+        return;
+      }
+
+      // admin-only commands
       if (isAdmin) {
 
         // user is deleting video
@@ -102,12 +115,6 @@
             socket.emit('videoSkipped', c.current.video);
           }
 
-          return;
-        }
-
-        // user is changing theme
-        if (c.message.indexOf(themeCheck) > -1) {
-          socket.emit('themeUpdated', c.message.split(themeCheck)[1]);
           return;
         }
       }
@@ -243,9 +250,9 @@
     });
 
     /**
-    * User has been registered as admin
+    * User has been been registered as admin
     */
-    socket.on('updateIsAdmin', function () {
+    socket.on('updateAdminStatus', function () {
       isAdmin = true;
     });
 

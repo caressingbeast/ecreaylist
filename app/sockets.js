@@ -1,6 +1,6 @@
 // app/sockets.js
 
-module.exports = function (io, secret) {
+module.exports = function (io, adminPassword) {
   var currentTheme = null; // keeps track of room theme
   var currentVideo = { video: null, startSeconds: 0 }; // keeps track of currently playing video
   var karma = {}; // keeps track of user upvotes/downvotes
@@ -137,11 +137,6 @@ module.exports = function (io, secret) {
       // send out new data
       io.sockets.emit('addUser', username);
       socket.emit('usernameSuccess');
-
-      if (name === secret.username) {
-        isAdmin = true;
-        socket.emit('updateIsAdmin');
-      }
     });
 
     /**
@@ -198,6 +193,23 @@ module.exports = function (io, secret) {
     });
 
     /**
+    * User is attempting to register as an admin
+    * @param password {String} admin password
+    */
+    socket.on('adminStatusRequested', function (password) {
+
+      // if no password, exit
+      if (!password) {
+        return;
+      }
+
+      if (adminPassword === password) {
+        isAdmin = true;
+        socket.emit('updateAdminStatus');
+      }
+    });
+
+    /**
     * User has kicked out another user
     * @param username {String} username of user getting kicked out
     */
@@ -211,8 +223,8 @@ module.exports = function (io, secret) {
     */
     socket.on('themeUpdated', function (theme) {
 
-      // if theme is empty or user is not admin, exit
-      if (!isAdmin || !theme) {
+      // if user is not admin, exit
+      if (!isAdmin) {
         return;
       }
 
