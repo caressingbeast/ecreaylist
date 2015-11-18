@@ -110,12 +110,6 @@
           socket.emit('themeUpdated', c.message.split(themeCheck)[1]);
           return;
         }
-      } else {
-
-        // don't show attempted command in chat
-        if (deleteCheck || kickCheck || skipCheck || themeCheck) {
-          return;
-        }
       }
 
       socket.emit('messageSent', { username: c.username, message: c.message });
