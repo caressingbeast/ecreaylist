@@ -23,6 +23,7 @@
     c.username = '';
     c.users = [];
     c.userVote = null;
+    c.videoEnded = false;
 
     var isAdmin = false;
 
@@ -445,6 +446,7 @@
       // update playlists
       c.playedVideos.push(video);
       c.playlist.splice(index, 1);
+      c.videoEnded = false;
 
       // if no videos left in queue, exit
       if (!nextVideo) {
@@ -458,7 +460,14 @@
     };
 
     /**
-    * The currently playing video has ended
+    * Video has ended, show loading spinner
+    */
+    socket.on('updateVideoEnded', function () {
+      c.videoEnded = true;
+    });
+
+    /**
+    * It's time to play the next video
     * @param video {Object} recently ended video
     */
     socket.on('playNextVideo', function (video) {

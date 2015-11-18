@@ -287,12 +287,15 @@ module.exports = function (io, adminPassword) {
     socket.on('videoEnded', function (video) {
       videoEndedCount++;
 
+      // update client data
+      socket.emit('updateVideoEnded');
+
       videoEndedTimer = setInterval(function () {
         if (userArray.length === videoEndedCount) {
           clearInterval(videoEndedTimer);
           shiftVideo(video);
           videoEndedCount = 0;
-          socket.emit('playNextVideo', video);
+          io.sockets.emit('playNextVideo', video);
         }
       }, 1000);
     });
