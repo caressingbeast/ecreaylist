@@ -12,7 +12,6 @@
     };
 
     var paused = false;
-    var videoTimeout = null;
     var videoTimer = null;
 
     function onPlayerStateChange (event) {
