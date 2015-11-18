@@ -106,7 +106,7 @@ module.exports = function (io) {
     }
 
     // send current data to new connection
-    socket.emit('populateInitialData', { admin: { isAdmin: isAdmin, address: socket.request.connection.remoteAddress },
+    socket.emit('populateInitialData', { admin: { isAdmin: isAdmin, address: socket.remoteAddress },
                                          messages: messages,
                                          playedVideos: playedVideos,
                                          playlist: playlist,
