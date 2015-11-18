@@ -291,6 +291,7 @@ module.exports = function (io, adminPassword) {
         if (userArray.length === videoEndedCount) {
           clearInterval(videoEndedTimer);
           shiftVideo(video);
+          videoEndedCount = 0;
           socket.emit('playNextVideo', video);
         }
       }, 1000);
