@@ -10,6 +10,7 @@ module.exports = function (io, secret) {
   var playlist = []; // keeps track of video queue
   var userArray = []; // keeps track of toLowerCase() usernames (for uniqueness checks)
   var userList = []; // keeps track of submitted usernames
+  var userMap = {};
   var votes = { upvotes: 0, downvotes: 0 }; // tracks upvotes/downvotes
 
   /**
@@ -25,6 +26,7 @@ module.exports = function (io, secret) {
     playlist = [];
     userArray = [];
     userList = [];
+    userMap = {};
     votes = { upvotes: 0, downvotes: 0 };
   }
 
@@ -129,6 +131,7 @@ module.exports = function (io, secret) {
       username = name;
       userArray.push(name.toLowerCase());
       userList.push(name);
+      userMap[name] = socket.id;
 
       // send out new data
       io.sockets.emit('addUser', username);
@@ -142,6 +145,10 @@ module.exports = function (io, secret) {
       socket.emit('updateCurrentVideo', currentVideo);
     });
 
+    /**
+    * User is requesting admin status
+    * @param password {String} admin password
+    */
     socket.on('adminRegistered', function (password) {
 
       // if admin already registered, exit
@@ -200,6 +207,14 @@ module.exports = function (io, secret) {
     */
     socket.on('currentVideoUpdated', function (data) {
       currentVideo = data;
+    });
+
+    /**
+    * User has kicked out another user
+    * @param username {String} username of user getting kicked out
+    */
+    socket.on('userKicked', function (username) {
+      // TODO: implement
     });
 
     /**
@@ -302,6 +317,7 @@ module.exports = function (io, secret) {
       // update stored data
       userArray.splice(getUsernameIndex(username), 1);
       userList.splice(getUsernameIndex(username, userList), 1);
+      delete userMap[username];
 
       // send out new data
       io.sockets.emit('removeUser', username);

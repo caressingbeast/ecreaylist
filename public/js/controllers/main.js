@@ -72,6 +72,7 @@
     function determineMessageEmit () {
       var adminCheck = '/register=';
       var deleteCheck = '/delete=';
+      var kickCheck = '/kick=';
       var skipCheck = '/skipcurrent';
       var themeCheck = '/theme=';
 
@@ -80,6 +81,7 @@
         return;
       }
 
+      // make sure they're admin
       if (isAdmin) {
 
         // user is deleting video
@@ -91,6 +93,11 @@
           }
 
           return;
+        }
+
+        // user is kicking out another user
+        if (c.message.indexOf(kickCheck) > -1) {
+          socket.emit('userKicked', c.message.split(kickCheck)[1]);
         }
 
         // user is skipping current video
@@ -107,6 +114,12 @@
         // user is changing theme
         if (c.message.indexOf(themeCheck) > -1) {
           socket.emit('themeUpdated', c.message.split(themeCheck)[1]);
+          return;
+        }
+      } else {
+
+        // don't show attempted command in chat
+        if (adminCheck || deleteCheck || skipCheck || themeCheck) {
           return;
         }
       }
@@ -241,6 +254,9 @@
       socket.emit('getCurrentVideo');
     });
 
+    /**
+    * User has been registered as admin
+    */
     socket.on('updateIsAdmin', function () {
       console.log('You are admin.');
       isAdmin = true;
