@@ -107,6 +107,13 @@ module.exports = function (io, adminPassword) {
       return;
     }
 
+    /**
+    * Client is still connected
+    */
+    socket.on('updateStatus', function () {
+      // do nothing
+    });
+
     // send current data to new connection
     socket.emit('populateInitialData', { messages: messages,
                                          playedVideos: playedVideos,
@@ -325,4 +332,9 @@ module.exports = function (io, adminPassword) {
       }
     });
   });
+
+  // ping clients to keep connection open
+  setInterval(function () {
+    io.sockets.emit('getStatus');
+  }, 15000);
 };

@@ -182,6 +182,13 @@
     }
 
     /**
+    * Request from server to get status (keeps connection open)
+    */
+    socket.on('getStatus', function () {
+      socket.emit('updateStatus');
+    });
+
+    /**
     * Too many users
     */
     socket.on('roomFull', function () {
