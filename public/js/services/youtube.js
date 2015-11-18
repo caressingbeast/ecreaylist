@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  function VideoService ($http, $rootScope, $window, socket) {
+  function VideoService ($http, $rootScope, $timeout, $window, socket) {
     var s = this;
 
     var youtube = {
@@ -12,13 +12,29 @@
     };
 
     var paused = false;
-    var videoTimer;
+    var videoTimeout = null;
+    var videoTimer = null;
 
     function onPlayerStateChange (event) {
+      if (event.data === YT.PlayerState.UNSTARTED) {
+
+        if (videoTimeout) {
+          return;
+        }
+
+        // if video still not playing after 10 seconds, skip
+        videoTimeout = $timeout(function () {
+          if (event.data === YT.PlayerState.UNSTARTED) {
+            videoTimeout = null;
+            socket.emit('videoEnded', youtube.video);
+          }
+        }, 10000);
+      }
+
       if (event.data === YT.PlayerState.PLAYING) {
         if (paused) {
-          socket.emit('videoUnpaused');
           paused = false;
+          socket.emit('videoUnpaused');
           return;
         }
 
