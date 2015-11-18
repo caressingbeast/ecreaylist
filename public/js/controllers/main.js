@@ -258,7 +258,6 @@
     * User has been registered as admin
     */
     socket.on('updateIsAdmin', function () {
-      console.log('You are admin.');
       isAdmin = true;
     });
 
