@@ -19,7 +19,7 @@ app.use(methodOverride());
 
 // routes and sockets
 require('./app/routes')(app);
-require('./app/sockets')(io, { username: 'brandizzle' });
+require('./app/sockets')(io, process.env.COMMAND_PASSWORD);
 
 // START SERVER (node server.js)
 // =============================================

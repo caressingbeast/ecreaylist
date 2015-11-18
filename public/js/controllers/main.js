@@ -70,10 +70,16 @@
     * Figures out what to do with a new message
     */
     function determineMessageEmit () {
+      var adminCheck = '/admin=';
       var deleteCheck = '/delete=';
       var kickCheck = '/kick=';
       var skipCheck = '/skipcurrent';
       var themeCheck = '/theme=';
+
+      if (c.message.indexOf(adminCheck) > -1) {
+        socket.emit('adminStatusRequested', c.message.split(adminCheck)[1]);
+        return;
+      }
 
       // make sure they're admin
       if (isAdmin) {
@@ -243,9 +249,9 @@
     });
 
     /**
-    * User has been registered as admin
+    * User has been been registered as admin
     */
-    socket.on('updateIsAdmin', function () {
+    socket.on('updateAdminStatus', function () {
       isAdmin = true;
     });
 
