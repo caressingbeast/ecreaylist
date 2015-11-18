@@ -242,6 +242,7 @@
     });
 
     socket.on('updateIsAdmin', function () {
+      console.log('You are admin.');
       isAdmin = true;
     });
 
