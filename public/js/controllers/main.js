@@ -70,16 +70,10 @@
     * Figures out what to do with a new message
     */
     function determineMessageEmit () {
-      var adminCheck = '/register=';
       var deleteCheck = '/delete=';
       var kickCheck = '/kick=';
       var skipCheck = '/skipcurrent';
       var themeCheck = '/theme=';
-
-      if (c.message.indexOf(adminCheck) > -1) {
-        socket.emit('adminRegistered', c.message.split(adminCheck)[1]);
-        return;
-      }
 
       // make sure they're admin
       if (isAdmin) {
@@ -119,7 +113,7 @@
       } else {
 
         // don't show attempted command in chat
-        if (adminCheck || deleteCheck || skipCheck || themeCheck) {
+        if (deleteCheck || kickCheck || skipCheck || themeCheck) {
           return;
         }
       }

@@ -27,6 +27,8 @@
           if (event.data === YT.PlayerState.UNSTARTED) {
             videoTimeout = null;
             socket.emit('videoEnded', youtube.video);
+          } else {
+            videoTimeout = null;
           }
         }, 10000);
       }
