@@ -91,7 +91,10 @@ module.exports = function (io) {
   }
 
   io.sockets.on('connection', function (socket) {
+    var isAdmin = socket.request.connection.remoteAddress === '192.168.1.145';
     var username;
+
+    console.log(socket.request.connection.remoteAddress, socket.remoteAddress);
 
     // clear stored data for first connection
     if (!userArray.length) {
@@ -105,7 +108,8 @@ module.exports = function (io) {
     }
 
     // send current data to new connection
-    socket.emit('populateInitialData', { messages: messages,
+    socket.emit('populateInitialData', { admin: isAdmin,
+                                         messages: messages,
                                          playedVideos: playedVideos,
                                          playlist: playlist,
                                          theme: currentTheme,
@@ -192,8 +196,8 @@ module.exports = function (io) {
     */
     socket.on('themeUpdated', function (theme) {
 
-      // if theme is empty, exit
-      if (!theme) {
+      // if theme is empty or user is not admin, exit
+      if (!isAdmin || !theme) {
         return;
       }
 
@@ -263,6 +267,12 @@ module.exports = function (io) {
     * @param video {Object} video to be skipped
     */
     socket.on('videoSkipped', function (video) {
+
+      // if user is not admin, exit
+      if (!isAdmin) {
+        return;
+      }
+
       shiftVideo(video);
       io.sockets.emit('playNextVideo', video);
     });

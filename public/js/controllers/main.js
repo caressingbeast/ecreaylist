@@ -24,6 +24,8 @@
     c.users = [];
     c.userVote = null;
 
+    var isAdmin = false;
+
     /**
      * Run before createNotification()
      * in order to be able to use WebNotifications
@@ -72,32 +74,35 @@
       var skipCheck = '/skipcurrent';
       var themeCheck = '/theme=';
 
-      // user is deleting video
-      if (c.message.indexOf(deleteCheck) > -1) {
-        var video = c.playlist[c.message.split(deleteCheck)[1]];
+      if (isAdmin) {
 
-        if (video && c.current.video.id.videoId !== video.id.videoId) {
-          socket.emit('videoRemovedFromQueue', video);
+        // user is deleting video
+        if (c.message.indexOf(deleteCheck) > -1) {
+          var video = c.playlist[c.message.split(deleteCheck)[1]];
+
+          if (video && c.current.video.id.videoId !== video.id.videoId) {
+            socket.emit('videoRemovedFromQueue', video);
+          }
+
+          return;
         }
 
-        return;
-      }
+        // user is skipping current video
+        if (c.message === skipCheck) {
 
-      // user is skipping current video
-      if (c.message === skipCheck) {
+          // make sure there is a next video
+          if (c.playlist.length > 1) {
+            socket.emit('videoSkipped', c.current.video);
+          }
 
-        // make sure there is a next video
-        if (c.playlist.length > 1) {
-          socket.emit('videoSkipped', c.current.video);
+          return;
         }
 
-        return;
-      }
-
-      // user is changing theme
-      if (c.message.indexOf(themeCheck) > -1) {
-        socket.emit('themeUpdated', c.message.split(themeCheck)[1]);
-        return;
+        // user is changing theme
+        if (c.message.indexOf(themeCheck) > -1) {
+          socket.emit('themeUpdated', c.message.split(themeCheck)[1]);
+          return;
+        }
       }
 
       socket.emit('messageSent', { username: c.username, message: c.message });
@@ -174,6 +179,7 @@
     * @param data {Object} existing data to cache
     */
     socket.on('populateInitialData', function (data) {
+      if (data.admin) isAdmin = data.admin;
       if (data.messages) c.messages = data.messages;
       if (data.playedVideos) c.playedVideos = data.playedVideos;
       if (data.playlist) c.playlist = data.playlist;
