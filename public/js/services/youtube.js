@@ -16,23 +16,6 @@
     var videoTimer = null;
 
     function onPlayerStateChange (event) {
-      if (event.data === YT.PlayerState.UNSTARTED) {
-
-        if (videoTimeout) {
-          return;
-        }
-
-        // if video still not playing after 10 seconds, skip
-        videoTimeout = $timeout(function () {
-          if (event.data === YT.PlayerState.UNSTARTED) {
-            videoTimeout = null;
-            socket.emit('videoEnded', youtube.video);
-          } else {
-            videoTimeout = null;
-          }
-        }, 10000);
-      }
-
       if (event.data === YT.PlayerState.PLAYING) {
         if (paused) {
           paused = false;
