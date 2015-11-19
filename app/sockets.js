@@ -280,6 +280,7 @@ module.exports = function (io, adminPassword) {
       // if threshold has been reached, skip video
       if ((votes.upvotes - votes.downvotes) <= threshold) {
         shiftVideo(video);
+        votes = { upvotes: 0, downvotes: 0 }; // reset votes!
         io.sockets.emit('playNextVideo', video);
       }
     });
