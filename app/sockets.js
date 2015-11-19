@@ -197,10 +197,10 @@ module.exports = function (io, adminPassword) {
     });
 
     /**
-    * User is attempting to register as an admin
+    * User has requested admin status
     * @param password {String} admin password
     */
-    socket.on('adminStatusRequested', function (password) {
+    socket.on('adminCommand', function (password) {
 
       // if no password, exit
       if (!password) {
@@ -209,26 +209,56 @@ module.exports = function (io, adminPassword) {
 
       if (adminPassword === password) {
         isAdmin = true;
-        socket.emit('updateAdminStatus');
+        socket.emit('adminCommandSuccess');
       }
     });
 
     /**
-    * User has kicked out another user
-    * @param username {String} username of user getting kicked out
+    * User has requested karma list
+    * @param user {String} target of karma check (particular user or all users)
     */
-    socket.on('userKicked', function () {
-      // TODO: implement
+    socket.on('karmaCommand', function (user) {
+
+      // if no user, exit
+      if (!user) {
+        return;
+      }
+
+      // if for all users, send entire list
+      if (user === 'all') {
+        io.sockets.emit('karmaCommandSuccess', karma);
+        return;
+      }
+
+      // send karma for particular user
+      if (karma[user]) {
+        io.sockets.emit('karmaCommandSuccess', karma[user]);
+      }
+    });
+
+    /**
+    * User has skipped current video
+    * @param video {Object} currently playing video
+    */
+    socket.on('skipCommand', function (video) {
+
+      // if not admin, exit
+      if (!isAdmin) {
+        return;
+      }
+
+      shiftVideo(video);
+      io.sockets.emit('playNextVideo', video);
     });
 
     /**
     * User has updated room theme
     * @param theme {String} new theme
     */
-    socket.on('themeUpdated', function (theme) {
+    socket.on('themeCommand', function (theme) {
 
-      // if user is not admin, exit
-      if (!isAdmin) {
+      // if not admin or no theme, exit
+      if (!isAdmin || !theme) {
         return;
       }
 
@@ -236,7 +266,7 @@ module.exports = function (io, adminPassword) {
       currentTheme = theme;
 
       // send out new data
-      io.sockets.emit('updateTheme', theme);
+      io.sockets.emit('themeCommandSuccess', theme);
     });
 
     /**
@@ -292,21 +322,6 @@ module.exports = function (io, adminPassword) {
     socket.on('videoEnded', function (video) {
       shiftVideo(video);
       socket.emit('playNextVideo', video);
-    });
-
-    /**
-    * Currently playing video has been skipped
-    * @param video {Object} video to be skipped
-    */
-    socket.on('videoSkipped', function (video) {
-
-      // if user is not admin, exit
-      if (!isAdmin) {
-        return;
-      }
-
-      shiftVideo(video);
-      io.sockets.emit('playNextVideo', video);
     });
 
     /**

@@ -25,6 +25,7 @@
     c.userVote = null;
     c.videoEnded = false;
 
+    var commands = ['/admin ', '/boot ', '/help', '/karma ', '/me ', '/skip', '/theme ', '/stats '];
     var isAdmin = false;
 
     /**
@@ -67,60 +68,57 @@
       }
     }
 
-    /**
-    * Figures out what to do with a new message
+    /*
+    * Checks message for commands
     */
-    function determineMessageEmit () {
-      var adminCheck = '/admin=';
-      var deleteCheck = '/delete=';
-      var kickCheck = '/kick=';
-      var skipCheck = '/skipcurrent';
-      var themeCheck = '/theme=';
+    function checkForMessageCommand () {
+      var isCommand = false;
 
-      // user is registering as an admin
-      if (c.message.indexOf(adminCheck) > -1) {
-        socket.emit('adminStatusRequested', c.message.split(adminCheck)[1]);
-        return;
+      // if not a slash command
+      if (c.message.charAt(0) !== '/') {
+        return isCommand;
       }
 
-      // user is changing theme
-      if (c.message.indexOf(themeCheck) > -1) {
-        socket.emit('themeUpdated', c.message.split(themeCheck)[1]);
-        return;
-      }
+      for (var i = 0; i < commands.length; i++) {
+        var command = commands[i];
+        var index = c.message.indexOf(command);
 
-      // admin-only commands
-      if (isAdmin) {
-
-        // user is deleting video
-        if (c.message.indexOf(deleteCheck) > -1) {
-          var video = c.playlist[c.message.split(deleteCheck)[1]];
-
-          if (video && c.current.video.id.videoId !== video.id.videoId) {
-            socket.emit('videoRemovedFromQueue', video);
-          }
-
-          return;
+        // not a valid command, exit
+        if (index === -1) {
+          continue;
         }
 
-        // user is kicking out another user
-        if (c.message.indexOf(kickCheck) > -1) {
-          socket.emit('userKicked', c.message.split(kickCheck)[1]);
-        }
+        switch (i) {
+          case 0:
+            isCommand = true;
+            socket.emit('adminCommand', c.message.split(command)[1]);
+            break;
 
-        // user is skipping current video
-        if (c.message === skipCheck) {
+          case 2:
+            isCommand = true;
+            socket.emit('helpCommand');
+            break;
 
-          // make sure there is a next video
-          if (c.playlist.length > 1) {
-            socket.emit('videoSkipped', c.current.video);
-          }
+          case 3:
+            isCommand = true;
+            socket.emit('karmaCommand', c.message.split(command)[1]);
+            break;
 
-          return;
+          case 5:
+            if (!isAdmin) return isCommand;
+            isCommand = true;
+            socket.emit('skipCommand', c.current.video);
+            break;
+
+          case 6:
+            if (!isAdmin) return isCommand;
+            isCommand = true;
+            socket.emit('themeCommand', c.message.split(command)[1]);
+            break;
         }
       }
 
-      socket.emit('messageSent', { username: c.username, message: c.message });
+      return isCommand;
     }
 
     /**
@@ -242,7 +240,7 @@
     };
 
     /**
-    * Username is taken
+    * Username not available
     */
     socket.on('usernameError', function () {
       alert('Sorry, that username is taken.');
@@ -257,11 +255,34 @@
       socket.emit('getCurrentVideo');
     });
 
+    /*
+    ============================================================================
+    MESSAGE COMMAND EVENTS
+    ============================================================================
+    /*
+
     /**
-    * User has been been registered as admin
+    * Updates user's admin status
     */
-    socket.on('updateAdminStatus', function () {
+    socket.on('adminCommandSuccess', function () {
       isAdmin = true;
+    });
+
+    /**
+    * Displays list of karma
+    * @param karma {Object} matching karma
+    */
+    socket.on('karmaCommandSuccess', function (karma) {
+      console.log(karma);
+    });
+
+    /**
+    * Updates room theme
+    * @param theme {Object} new theme
+    */
+    socket.on('themeCommandSuccess', function (theme) {
+      c.theme = theme;
+      resizeColumns();
     });
 
     /**
@@ -295,18 +316,14 @@
         return;
       }
 
-      determineMessageEmit();
+      var isCommand = checkForMessageCommand();
+
+      if (!isCommand) {
+        socket.emit('messageSent', { username: c.username, message: c.message });
+      }
+
       c.message = '';
     };
-
-    /**
-    * Updates room theme
-    * @param theme {Object} new theme
-    */
-    socket.on('updateTheme', function (theme) {
-      c.theme = theme;
-      resizeColumns();
-    });
 
     /**
     * Adds new message to c.messages
