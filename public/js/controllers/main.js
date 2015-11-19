@@ -457,11 +457,6 @@
 
       // if no videos left in queue, clear data and exit
       if (!nextVideo) {
-        c.current = {
-          startSeconds: 0,
-          video: null
-        };
-        
         return;
       }
 
@@ -517,6 +512,7 @@
     * Loads current video (c.current)
     */
     c.load = function () {
+      resizeColumns();
       VideoService.launchPlayer(c.current);
     };
 
