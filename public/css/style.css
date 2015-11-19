@@ -371,6 +371,10 @@ label {
   text-align: center;
 }
 
+#player-overlay .spinner {
+  color: #fff;
+}
+
 #player-overlay a {
   display: none;
   margin: 0 10px;
@@ -387,6 +391,7 @@ label {
   color: #df1f1f;
 }
 
+#player-overlay.active,
 #player-overlay:hover {
   background: rgba(0, 0, 0, 0.75);
 }

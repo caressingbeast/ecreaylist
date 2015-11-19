@@ -9,7 +9,8 @@ module.exports = function (io, adminPassword) {
   var playlist = []; // keeps track of video queue
   var userArray = []; // keeps track of toLowerCase() usernames (for uniqueness checks)
   var userList = []; // keeps track of submitted usernames
-  var userMap = {};
+  var userMap = {}; // maps usernames to socket IDs
+  var videoEndedCount = 0; // keeps track of video endings (synced playback);
   var votes = { upvotes: 0, downvotes: 0 }; // tracks upvotes/downvotes
 
   /**
@@ -25,6 +26,7 @@ module.exports = function (io, adminPassword) {
     userArray = [];
     userList = [];
     userMap = {};
+    videoEndedCount = 0;
     votes = { upvotes: 0, downvotes: 0 };
   }
 
@@ -95,6 +97,7 @@ module.exports = function (io, adminPassword) {
   io.sockets.on('connection', function (socket) {
     var isAdmin = false;
     var username;
+    var videoEndedTimer;
 
     // clear stored data for first connection
     if (!userArray.length) {
@@ -289,8 +292,19 @@ module.exports = function (io, adminPassword) {
     * @param video {Object} video that ended
     */
     socket.on('videoEnded', function (video) {
-      shiftVideo(video);
-      socket.emit('playNextVideo', video);
+      videoEndedCount++;
+
+      // update client data
+      socket.emit('updateVideoEnded');
+
+      videoEndedTimer = setInterval(function () {
+        if (userArray.length === videoEndedCount) {
+          clearInterval(videoEndedTimer);
+          shiftVideo(video);
+          videoEndedCount = 0;
+          io.sockets.emit('playNextVideo', video);
+        }
+      }, 1000);
     });
 
     /**
