@@ -455,8 +455,13 @@
       c.playlist.splice(index, 1);
       c.videoEnded = false;
 
-      // if no videos left in queue, exit
+      // if no videos left in queue, clear data and exit
       if (!nextVideo) {
+        c.current = {
+          startSeconds: 0,
+          video: null
+        };
+        
         return;
       }
 
