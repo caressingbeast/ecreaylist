@@ -10,7 +10,6 @@ module.exports = function (io, adminPassword) {
   var userArray = []; // keeps track of toLowerCase() usernames (for uniqueness checks)
   var userList = []; // keeps track of submitted usernames
   var userMap = {}; // maps usernames to socket IDs
-  var videoEndedCount = 0; // keeps track of video endings (synced playback);
   var votes = { upvotes: 0, downvotes: 0 }; // tracks upvotes/downvotes
 
   /**
@@ -26,7 +25,6 @@ module.exports = function (io, adminPassword) {
     userArray = [];
     userList = [];
     userMap = {};
-    videoEndedCount = 0;
     votes = { upvotes: 0, downvotes: 0 };
   }
 
@@ -97,7 +95,6 @@ module.exports = function (io, adminPassword) {
   io.sockets.on('connection', function (socket) {
     var isAdmin = false;
     var username;
-    var videoEndedTimer;
 
     // clear stored data for first connection
     if (!userArray.length) {
