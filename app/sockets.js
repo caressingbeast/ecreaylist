@@ -292,19 +292,8 @@ module.exports = function (io, adminPassword) {
     * @param video {Object} video that ended
     */
     socket.on('videoEnded', function (video) {
-      videoEndedCount++;
-
-      // update client data
-      socket.emit('updateVideoEnded');
-
-      videoEndedTimer = setInterval(function () {
-        if (userArray.length === videoEndedCount) {
-          clearInterval(videoEndedTimer);
-          shiftVideo(video);
-          videoEndedCount = 0;
-          io.sockets.emit('playNextVideo', video);
-        }
-      }, 1000);
+      shiftVideo(video);
+      socket.emit('playNextVideo', video);
     });
 
     /**
