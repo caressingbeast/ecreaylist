@@ -333,6 +333,11 @@ label {
   width: 78%;
 }
 
+.message .content img {
+  display: block;
+  max-width: 100%;
+}
+
 .message .content div {
   padding: 0;
   word-break: break-word;

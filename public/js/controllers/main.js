@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  function MainCtrl ($timeout, socket, VideoService) {
+  function MainCtrl ($sce, $timeout, socket, VideoService) {
     var c = this; // cache controller
 
     c.current = {
@@ -300,6 +300,14 @@
     };
 
     /**
+    * Displays proper HTML for messages
+    * @param message {String} message to display HTML for
+    */
+    c.checkForHtml = function (message) {
+      return $sce.trustAsHtml(message);
+    };
+
+    /**
     * Updates room theme
     * @param theme {Object} new theme
     */
@@ -313,6 +321,17 @@
     * @param message {Object} message to be added
     */
     socket.on('addMessage', function (message) {
+
+      // check if message is an image
+      if (message.isImage) {
+        message.message = '<img src="' + message.message + '" alt="' + message.message + '"/>';
+      }
+
+      // check if message is a url
+      if (message.isUrl) {
+        message.message = '<a href="' + message.message + '" target="_blank">' + message.message + '</a>';
+      }
+
       c.messages.push(message);
 
       // don't notify originator of new message
