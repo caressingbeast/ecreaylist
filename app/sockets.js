@@ -283,12 +283,12 @@ module.exports = function (io, adminPassword) {
 
       // check for image
       if (checkForImage(data.message)) {
-        data.isImage = true;
+        data.message = '<img src="' + data.message + '" alt="' + data.message + '"/>';
       }
 
       // check for url
       if (checkForUrl(data.message)) {
-        data.isUrl = true;
+        data.message = '<a href="' + data.message + '" target="_blank">' + data.message + '</a>';
       }
 
       messages.push(data);
