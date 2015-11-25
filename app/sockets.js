@@ -29,6 +29,41 @@ module.exports = function (io, adminPassword) {
   }
 
   /**
+  * Checks for image URL in message
+  * @param message {String} message to check in
+  * @returns {Boolean} if message contains valid image URL
+  */
+  function checkForImage (message) {
+
+    // if message contains spaces, exit
+    if (message.indexOf(' ') > -1) {
+      return false;
+    }
+
+    if (/(jpg|gif|png|JPG|GIF|PNG|JPEG|jpeg)$/.test(message)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+  * Checks for a non-image URL in message
+  * @param message {String} message to check in
+  * @returns {Boolean} if message contains valid URL
+  */
+  function checkForUrl (message) {
+
+    // if message contains spaces, exit
+    if (message.indexOf(' ') > -1) {
+      return false;
+    }
+
+    var pattern = new RegExp('(http|ftp|https)://[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:/~+#-]*[\w@?^=%&amp;/~+#-])?');
+    return pattern.test(message);
+  }
+
+  /**
   * Returns the array index of a submitted username in userArray/userList
   * @param name {String} username to check for
   * @param arr {Array} array to search in (defaults to userArray if undefined)
@@ -245,7 +280,19 @@ module.exports = function (io, adminPassword) {
     */
     socket.on('messageSent', function (data) {
       data.timestamp = new Date(); // add timestamp
+
+      // check for image
+      if (checkForImage(data.message)) {
+        data.isImage = true;
+      }
+
+      // check for url
+      if (checkForUrl(data.message)) {
+        data.isUrl = true;
+      }
+
       messages.push(data);
+
       io.sockets.emit('addMessage', data);
     });
 
