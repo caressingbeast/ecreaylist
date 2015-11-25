@@ -287,7 +287,7 @@ module.exports = function (io, adminPassword) {
       }
 
       // check for url
-      if (checkForUrl(data.message)) {
+      if (!checkForImage(data.message) && checkForUrl(data.message)) {
         data.message = '<a href="' + data.message + '" target="_blank">' + data.message + '</a>';
       }
 
