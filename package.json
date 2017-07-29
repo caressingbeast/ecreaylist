@@ -4,11 +4,23 @@
   "description": "Turntable.fm-style playlist manager using YouTube videos",
   "main": "server.js",
   "author": "Brandon Burning",
+  "scripts": {
+    "build": "webpack -p",
+    "watch": "webpack-dev-server"
+  },
   "dependencies": {
     "body-parser": "~1.0.1",
     "express": "~4.0.0",
     "method-override": "~1.0.0",
     "mongoose": "^4.1.0",
     "socket.io": "^1.3.7"
+  },
+  "devDependencies": {
+    "babel-core": "^6.25.0",
+    "babel-loader": "^7.1.1",
+    "babel-preset-env": "^1.6.0",
+    "babel-preset-react": "^6.24.1",
+    "webpack": "^3.4.1",
+    "webpack-dev-server": "^2.6.1"
   }
 }
