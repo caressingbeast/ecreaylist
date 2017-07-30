@@ -1,3 +1,5 @@
+require('../css/style.css');
+
 // 3rd party deps (loaded to the window)
 require('script-loader!socket.io-client');
 require('script-loader!angular');
