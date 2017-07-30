@@ -17,6 +17,9 @@ module.exports = {
 		],
 		alias: {
 			// path configs
+			// todo: remove these once we convert to ES6 imports (and we stop using the script-loader)
+			'socket.io-client$': 'socket.io-client/dist/socket.io.js',
+			'angular$': 'angular/angular.js'
 		}
 	},
 	devtool: "source-map", // slows compiling, but keeps sanity
